@@ -6,11 +6,18 @@
  * user guide available at https://docs.gradle.org/4.4.1/userguide/tutorial_java_projects.html
  */
 
+plugins {
+    id "io.freefair.lombok" version "3.8.1"
+}
+
 // Apply the java plugin to add support for Java
 apply plugin: 'java'
 
 // Apply the application plugin to add support for building an application
 apply plugin: 'application'
+
+// Apply AntLR plugin so we can use the AntLR DOT grammar.
+apply plugin: 'antlr'
 
 // In this section you declare where to find the dependencies of your project
 repositories {
@@ -20,6 +27,8 @@ repositories {
 }
 
 dependencies {
+    antlr 'org.antlr:antlr4:4.7.2'
+
     // This dependency is found on compile classpath of this component and consumers.
     compile 'com.google.guava:guava:23.0'
 
