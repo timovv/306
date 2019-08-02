@@ -8,12 +8,12 @@ public class Dependency {
 
     @Getter private final Task from;
     @Getter private final Task to;
-    @Getter private final int cost;
+    @Getter private final int delay;
 
-    public Dependency(Task from, Task to, int cost) {
+    public Dependency(Task from, Task to, int delay) {
         this.from = from;
         this.to = to;
-        this.cost = cost;
+        this.delay = delay;
     }
 
     /**

@@ -29,7 +29,7 @@ class DOTListenerAdapter extends DOTBaseListener {
 
         var nodeName = ctx.node_id().id().getText();
         graphBuilder.addNode(nodeName, getWeight(ctx.attr_list()));
-}
+    }
 
     @Override
     public void exitEdge_stmt(DOTParser.Edge_stmtContext ctx) {
