@@ -8,4 +8,5 @@ import lombok.Setter;
  */
 public class Parameters {
     @Setter @Getter private static int numProcessors;
+    @Setter @Getter private static int numTasks;
 }

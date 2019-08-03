@@ -1,35 +1,29 @@
 package team02.project.graph;
 
-import lombok.Getter;
+import lombok.EqualsAndHashCode;
+import lombok.RequiredArgsConstructor;
+import lombok.Value;
+import lombok.experimental.NonFinal;
 
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 
+@Value
+@RequiredArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Task {
 
-    @Getter private final String id;
-    @Getter private final Set<Dependency> dependents = new HashSet<>();
-    @Getter private final int duration;
-
-    public Task(String id, int duration) {
-       this.id = id;
-       this.duration = duration;
-    }
+    private static int counter = 0;
 
     /**
-     * {@link Task Tasks} with equal {@link #id} are considered equal
+     * This is illegal, but lombok is cancer so its ok
      */
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Task task = (Task) o;
-        return id.equals(task.id);
-    }
+    { this.id = counter++; }
+    @NonFinal @EqualsAndHashCode.Include int id;
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
-    }
+    String name;
+    int duration;
+    Set<Dependency> children = new HashSet<>();
+    Set<Dependency> parents = new HashSet<>();
+
 }
