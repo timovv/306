@@ -10,7 +10,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @AllArgsConstructor
-public class Schedule {
+public class Schedule implements Comparable<Schedule>{
 
     private static final int PROCESSOR_NUM = 0;
     private static final int START_TIME = 1;
@@ -33,13 +33,12 @@ public class Schedule {
 
             // If this task is a starting task, schedule in the next available slot
             if (startingTaskIds.contains(id)) {
-                for (int proc = 0; proc < Parameters.getNumProcessors(); proc++) {
-                    var next = new Schedule(this, id, proc, earliestProcessorAvailable[proc]);
-                    result.add(next);
+                for (int procNum = 0; procNum < Parameters.getNumProcessors(); procNum++) {
+                    result.add(new Schedule(this, id, procNum, earliestProcessorAvailable[procNum]));
                 }
             }
 
-            // Otherwise calculate earliest start times
+            // Otherwise calculate earliest start times based on dependencies
             var earliestStartTimes = new int[Parameters.getNumProcessors()];
             for (var parentDep : taskGraph.findTaskById(id).getParents()) {
                 int parentId = parentDep.getFrom().getId();
@@ -48,9 +47,9 @@ public class Schedule {
                 if (completeSchedule[parentId][FINISH_TIME] == 0) continue outer;
 
                 // Take into account communication delays
-                for (int proc = 0; proc < Parameters.getNumProcessors(); proc++) {
-                    if (proc != completeSchedule[parentId][PROCESSOR_NUM]) {
-                        earliestStartTimes[proc] = Math.max(earliestStartTimes[proc],
+                for (int procNum = 0; procNum < Parameters.getNumProcessors(); procNum++) {
+                    if (procNum != completeSchedule[parentId][PROCESSOR_NUM]) {
+                        earliestStartTimes[procNum] = Math.max(earliestStartTimes[procNum],
                                 completeSchedule[parentId][FINISH_TIME] + parentDep.getDelay()
                         );
                     }
@@ -59,15 +58,13 @@ public class Schedule {
 
             // Actual start times are the max between earliest start times (governed by
             // dependencies) and the earliest time processor is available
-            for (int proc = 0; proc < Parameters.getNumProcessors(); proc++) {
-                result.add(new Schedule(this, id, proc, Math.max(earliestProcessorAvailable[proc],
-                        earliestStartTimes[proc])));
+            for (int procNum = 0; procNum < Parameters.getNumProcessors(); procNum++) {
+                result.add(new Schedule(this, id, procNum, Math.max(earliestProcessorAvailable[procNum],
+                        earliestStartTimes[procNum])));
             }
         }
         return result;
     }
-
-
 
     private int[] earliestProcessorAvailable(int[][] completeSchedule) {
         var finishingTimes = new int[Parameters.getNumProcessors()];
@@ -92,4 +89,8 @@ public class Schedule {
         return completeSchedule;
     }
 
+    @Override
+    public int compareTo(Schedule o) {
+        return 0;
+    }
 }

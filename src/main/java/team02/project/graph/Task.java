@@ -15,11 +15,9 @@ public class Task {
 
     private static int counter = 0;
 
-    /**
-     * This is illegal, but lombok is cancer so its ok
-     */
-    { this.id = counter++; }
+    /** This is illegal, but lombok is cancer so its ok **/
     @NonFinal @EqualsAndHashCode.Include int id;
+    { this.id = counter++; }
 
     String name;
     int duration;
