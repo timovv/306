@@ -1,11 +1,10 @@
 package team02.project.io;
 
 import lombok.var;
-import org.antlr.v4.runtime.CharStreams;
-import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.junit.Before;
 import org.junit.Test;
+import team02.project.graph.Graph;
+import team02.project.graph.GraphBuilder;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -49,21 +48,25 @@ public class GraphReaderTest {
         }
 
         @Override
-        public void addNode(String name, int weight) {
-            output.add("node: " + name + " weight: " + weight);
+        public void addNode(int id, int weight) {
+            output.add("node: " + id + " weight: " + weight);
         }
 
         @Override
-        public void addEdge(String toNode, String fromNode, int weight) {
-            output.add("edge: " + toNode + "," + fromNode + " weight: " + weight);
+        public void addEdge(int fromId, int toId, int weight) {
+            output.add("edge: " + fromId + "," + toId + " weight: " + weight);
+        }
+
+        @Override
+        public Graph build() {
+            throw new UnsupportedOperationException();
         }
     }
 
     @Test
     public void graphReaderWorks() throws Exception {
-        var reader = new GraphReader();
         var builder = new GraphBuilderStub();
-        reader.readInto(getClass().getResourceAsStream("/team02/project/testGraphs/Nodes_7_OutTree.dot"), builder);
+        GraphReader.readInto(getClass().getResourceAsStream("/team02/project/testGraphs/Nodes_7_OutTree.dot"), builder);
         assertEquals(EXPECTED_OUTPUT, output);
     }
 }
