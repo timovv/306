@@ -27,5 +27,4 @@ public class CLITest {
         assertEquals(config.isVisualize(), false);
         assertEquals(config.outputDOTFile(), "test-output.dot");
     }
-
 }
