@@ -536,3 +536,6 @@ gradle-app.setting
 .idea/encodings.xml
 
 # End of https://www.gitignore.io/api/java,linux,macos,gradle,windows,eclipse,intellij
+
+# lombok.config autogenierated by lombok plugin
+/lombok.config
