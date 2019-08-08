@@ -10,24 +10,27 @@ import java.util.Objects;
 import java.util.Set;
 
 @Value
-public class Schedule implements Iterable<ScheduledTask> {
+public class Schedule implements Iterable<ScheduledTask>, Comparable<Schedule> {
 
     private static final Schedule EMPTY = new Schedule();
 
     Schedule parent;
     ScheduledTask scheduledTask;
     int depth;
+    int cost;
 
     private Schedule() {
         parent = null;
         scheduledTask = null;
         depth = 0;
+        cost = 0;
     }
 
-    public Schedule(@NonNull Schedule parent, @NonNull ScheduledTask scheduledTask) {
+    public Schedule(@NonNull Schedule parent, @NonNull ScheduledTask scheduledTask, int estimatedCost) {
         this.parent = parent;
         this.scheduledTask = scheduledTask;
         this.depth = parent.getDepth() + 1;
+        this.cost = getFinishTime() + estimatedCost;
     }
 
     public static Schedule empty() {
@@ -61,6 +64,7 @@ public class Schedule implements Iterable<ScheduledTask> {
         // this is spaghetto
         outer:
         for(val node : context.getTaskGraph().getNodes()) {
+            int c = 0;
             // not a candidate if it's already in the schedule
             if(Iterators.contains(nodesIterator(), node)) {
                 continue;
@@ -69,6 +73,7 @@ public class Schedule implements Iterable<ScheduledTask> {
             // not a candidate if it has incoming edges which are not satisfied
             for(val edge : node.getIncomingEdges().entrySet()) {
                 if(!Iterators.contains(nodesIterator(), edge.getKey())) {
+                    c += node.getWeight();
                     continue outer;
                 }
             }
@@ -77,6 +82,7 @@ public class Schedule implements Iterable<ScheduledTask> {
             for(int i = 0; i < context.getProcessorCount(); ++i) {
                 // start time = max(finish time of dependencies not on this processor + transfer time, finish time of last task on this processor)
                 int startTime = 0;
+                c += node.getWeight();
 
                 // find last task on this processor if any
                 for(val schedule : this) {
@@ -94,8 +100,7 @@ public class Schedule implements Iterable<ScheduledTask> {
                         startTime = Math.max(startTime, finishTime + transferTime);
                     }
                 }
-
-                output.add(new Schedule(this, new ScheduledTask(i, startTime, node)));
+                output.add(new Schedule(this, new ScheduledTask(i, startTime, node), c / context.getProcessorCount()));
             }
 
         }
@@ -141,5 +146,10 @@ public class Schedule implements Iterable<ScheduledTask> {
                 return ret;
             }
         };
+    }
+
+    @Override
+    public int compareTo(Schedule o) {
+        return Integer.compare(this.cost, o.cost);
     }
 }
