@@ -11,9 +11,9 @@ public class Runner {
 
         var loader = new TestGraphLoader(
                 (nodes, procs) -> nodes <= 10 && procs <= 2,
-                1);
+                3);
 
-        var benchmark = new AlgorithmBenchmark(NaiveBranchBoundAlgorithm.class);
+        var benchmark = new AlgorithmBenchmark(NaiveBranchBoundAlgorithm::new);
 
         for (var testGraph : loader) {
             Result result = benchmark.run(testGraph.getFile(), testGraph.getNumProcessors());

@@ -3,7 +3,10 @@ package team02.project.benchmark;
 import lombok.Value;
 import lombok.var;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -12,8 +15,8 @@ import java.util.function.BiFunction;
 
 public class TestGraphLoader implements Iterable<TestGraphLoader.TestGraph> {
 
-    private static final String PREFIX = "/team02/project/testGraphs/";
-    private static final String GRAPH_FILE = "/team02/project/graphs.csv";
+    private static final String PREFIX = "./test_graphs/dotfiles/";
+    private static final String GRAPH_FILE = "./test_graphs/graphs.csv";
     private static final String DELIMITER = ",";
     private static final String EXTENSION = ".dot";
 
@@ -31,27 +34,30 @@ public class TestGraphLoader implements Iterable<TestGraphLoader.TestGraph> {
      * @param size Number of graphs to load and benchmark
      */
     public TestGraphLoader(BiFunction<Integer, Integer, Boolean> selectionPred, int size) {
-        var clazz = getClass();
-        var scanner = new Scanner(clazz.getResourceAsStream(GRAPH_FILE));
-        int count = 0;
-        while (scanner.hasNextLine()) {
-            String[] parts = scanner.nextLine().split(DELIMITER);
-            var name = parts[0];
-            int numNodes = Integer.parseInt(parts[1]);
-            int numProcessors = Integer.parseInt(parts[2]);
-            int optimal = Integer.parseInt(parts[3]);
+        try {
+            var scanner = new Scanner(Paths.get(GRAPH_FILE));
+            int count = 0;
+            while (scanner.hasNextLine()) {
+                String[] parts = scanner.nextLine().split(DELIMITER);
+                var name = parts[0];
+                int numNodes = Integer.parseInt(parts[1]);
+                int numProcessors = Integer.parseInt(parts[2]);
+                int optimal = Integer.parseInt(parts[3]);
 
-            if (!selectionPred.apply(numNodes, numProcessors)) {
-                continue;
-            }
-            var tg = new TestGraph(
-                    clazz.getResourceAsStream(PREFIX + name + EXTENSION), name,
-                    numNodes, numProcessors, optimal);
+                if (!selectionPred.apply(numNodes, numProcessors)) {
+                    continue;
+                }
+                var tg = new TestGraph(
+                        Paths.get(PREFIX + name + EXTENSION), name,
+                        numNodes, numProcessors, optimal);
 
-            testGraphs.put(name, tg);
-            if (size == ++count) {
-                break;
+                testGraphs.put(name, tg);
+                if (size == ++count) {
+                    break;
+                }
             }
+        } catch (IOException ex) {
+            ex.printStackTrace();
         }
     }
 
@@ -72,7 +78,7 @@ public class TestGraphLoader implements Iterable<TestGraphLoader.TestGraph> {
 
     @Value
     public static class TestGraph {
-        InputStream file;
+        Path file;
         String name;
         int numNodes;
         int numProcessors;
