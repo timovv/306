@@ -19,6 +19,11 @@ public class TestGraphLoader implements Iterable<TestGraphLoader.TestGraph> {
 
     private final Map<String, TestGraph> testGraphs = new HashMap<>();
 
+
+    public TestGraphLoader(BiFunction<Integer, Integer, Boolean> selectionPred) {
+        new TestGraphLoader(selectionPred, Integer.MAX_VALUE);
+    }
+
     /**
      * Loads a selection of test graphs from resources folder
      * @param selectionPred Given number of nodes and number of processors in input graph, return true
