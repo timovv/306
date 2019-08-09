@@ -20,8 +20,14 @@ jobs:
       - run:
           name: Run Tests
           command: ./gradlew test
+      - run:
+          name: Build executable jar
+          command: ./gradlew shadowJar
       - store_artifacts:
           path: build/reports
           destination: reports
+      - store_artifacts:
+          path: build/libs
+          destination: bin
       - store_test_results:
           path: build/test-results 
