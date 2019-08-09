@@ -61,18 +61,23 @@ public class Schedule implements Iterable<ScheduledTask>, Comparable<Schedule> {
     public Set<Schedule> expand(SchedulingContext context) {
         Set<Schedule> output = new HashSet<>();
 
+        Set<Node> nodesInSchedule = new HashSet<>();
+        for(val node : this) {
+            nodesInSchedule.add(node.getTask());
+        }
+
         // this is spaghetto
         outer:
         for(val node : context.getTaskGraph().getNodes()) {
             int c = 0;
             // not a candidate if it's already in the schedule
-            if(Iterators.contains(nodesIterator(), node)) {
+            if(nodesInSchedule.contains(node)) {
                 continue;
             }
 
             // not a candidate if it has incoming edges which are not satisfied
             for(val edge : node.getIncomingEdges().entrySet()) {
-                if(!Iterators.contains(nodesIterator(), edge.getKey())) {
+                if(!nodesInSchedule.contains(edge.getKey())) {
                     c += node.getWeight();
                     continue outer;
                 }

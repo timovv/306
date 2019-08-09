@@ -11,10 +11,10 @@ public class Runner {
         System.out.println("Starting...");
 
         var loader = new TestGraphLoader(
-                (nodes, procs) -> nodes <= 10 && procs <= 2,
+                (nodes, procs) -> nodes <= 10 && procs <= 4,
                 3);
 
-        var benchmark = new AlgorithmBenchmark(NaiveBranchBoundAlgorithm::new);
+        var benchmark = new AlgorithmBenchmark(AStarAlgorithm::new);
 
         for (var testGraph : loader) {
             Result result = benchmark.run(testGraph.getFile(), testGraph.getNumProcessors());
