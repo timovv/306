@@ -11,7 +11,7 @@ public class AStarAlgorithm implements SchedulingAlgorithm {
     @Override
     public Schedule calculateOptimal(SchedulingContext ctx) {
 
-        PriorityQueue<Schedule> scheduleQueue = new PriorityQueue(INITIAL_SIZE);
+        PriorityQueue<Schedule> scheduleQueue = new PriorityQueue<>(INITIAL_SIZE);
         scheduleQueue.add(Schedule.empty());
 
         while(!scheduleQueue.isEmpty()){
@@ -22,9 +22,7 @@ public class AStarAlgorithm implements SchedulingAlgorithm {
 
             // expand and compute costs
             val children = s.expand(ctx);
-            for(val child : children) {
-                scheduleQueue.add(child);
-            }
+            scheduleQueue.addAll(children);
         }
         return null;
     }

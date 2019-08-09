@@ -26,11 +26,11 @@ public class Schedule implements Iterable<ScheduledTask>, Comparable<Schedule> {
         cost = 0;
     }
 
-    public Schedule(@NonNull Schedule parent, @NonNull ScheduledTask scheduledTask, int estimatedCost) {
+    public Schedule(@NonNull Schedule parent, @NonNull ScheduledTask scheduledTask, int heuristic) {
         this.parent = parent;
         this.scheduledTask = scheduledTask;
         this.depth = parent.getDepth() + 1;
-        this.cost = getFinishTime() + estimatedCost;
+        this.cost = heuristic;
     }
 
     public static Schedule empty() {
@@ -100,7 +100,9 @@ public class Schedule implements Iterable<ScheduledTask>, Comparable<Schedule> {
                         startTime = Math.max(startTime, finishTime + transferTime);
                     }
                 }
-                output.add(new Schedule(this, new ScheduledTask(i, startTime, node), c / context.getProcessorCount()));
+
+                // calculate heuristic
+                output.add(new Schedule(this, new ScheduledTask(i, startTime, node), Math.max(this.cost, startTime + node.getBottomLevel())));
             }
 
         }
