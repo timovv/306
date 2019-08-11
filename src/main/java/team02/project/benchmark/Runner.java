@@ -11,7 +11,7 @@ public class Runner {
 
         var loader = new TestGraphLoader(
                 (nodes, procs) -> nodes <= 10 && procs <= 2,
-                3);
+                1);
 
         var benchmark = new AlgorithmBenchmark(NaiveBranchBoundAlgorithm::new);
 
