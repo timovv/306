@@ -1,6 +1,9 @@
 package team02.project.cli;
 import static team02.project.cli.CLIConstants.*;
 
+/**
+ * Provides default values if cli arguments are missing
+ */
 public class CLIDefaultConfig implements CLIConfig {
 
     protected String inputDOTFile = DEFAULT_INPUT_DOT_FILE_NAME;

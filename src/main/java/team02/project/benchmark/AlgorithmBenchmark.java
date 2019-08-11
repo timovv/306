@@ -10,14 +10,24 @@ import team02.project.io.GraphReader;
 import java.nio.file.Path;
 import java.util.function.Supplier;
 
+/**
+ * Basic benchmark to time (in milliseconds) the run time of any {@link SchedulingAlgorithm}
+ */
 public class AlgorithmBenchmark {
 
     private SchedulingAlgorithm algorithm;
+
 
     public AlgorithmBenchmark(Supplier<SchedulingAlgorithm> algorithmSupplier) {
         this.algorithm = algorithmSupplier.get();
     }
 
+    /**
+     * Run the supplied algorithm and return the time taken to {@link SchedulingAlgorithm#calculateOptimal}
+     * @param testGraph The file as {@link Path} of the input dotfile
+     * @param processorCount The number of processors tasks are to be assigned to
+     * @return The {@link Result} containing time taken (ms) and the computed schedule length
+     */
     public Result run(Path testGraph, int processorCount) {
         var graphBuilder = new GraphBuilderImpl();
         GraphReader.readInto(testGraph, graphBuilder);

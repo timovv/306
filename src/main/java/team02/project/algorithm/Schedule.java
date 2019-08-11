@@ -6,9 +6,12 @@ import team02.project.graph.Node;
 
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Objects;
 import java.util.Set;
 
+/**
+ * Represents a partial (or complete) schedule in the solution space.
+ * A {@link Schedule} is a delta encoding containing a new {@link ScheduledTask task assignment}.
+ */
 @Value
 public class Schedule implements Iterable<ScheduledTask> {
 
@@ -55,10 +58,15 @@ public class Schedule implements Iterable<ScheduledTask> {
         return finishTime;
     }
 
+    /**
+     * Computes all permutations of unassigned {@link Node tasks} to the earliest
+     * possible starting time for each processor (accounting for communication delays)
+     * @param context The {@link SchedulingContext}
+     * @return A {@link Set<Schedule> set} containing all computed permutations of schedules
+     */
     public Set<Schedule> expand(SchedulingContext context) {
         Set<Schedule> output = new HashSet<>();
 
-        // this is spaghetto
         outer:
         for(val node : context.getTaskGraph().getNodes()) {
             // not a candidate if it's already in the schedule

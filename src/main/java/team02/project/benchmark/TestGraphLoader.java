@@ -23,12 +23,17 @@ public class TestGraphLoader implements Iterable<TestGraphLoader.TestGraph> {
     private final Map<String, TestGraph> testGraphs = new HashMap<>();
 
 
+    /**
+     * Loads all test graphs from ./test_graphs/ directory which meets selection criteria
+     * @param selectionPred Given number of nodes and number of processors in input graph, return true
+     *                      if the current graph should be added to selection
+     */
     public TestGraphLoader(BiFunction<Integer, Integer, Boolean> selectionPred) {
         new TestGraphLoader(selectionPred, Integer.MAX_VALUE);
     }
 
     /**
-     * Loads a selection of test graphs from resources folder
+     * Loads a selection of test graphs from ./test_graphs/ directory
      * @param selectionPred Given number of nodes and number of processors in input graph, return true
      *                      if the current graph should be added to selection
      * @param size Number of graphs to load and benchmark
@@ -61,13 +66,17 @@ public class TestGraphLoader implements Iterable<TestGraphLoader.TestGraph> {
         }
     }
 
+    /**
+     * Lookup a loaded {@link TestGraph} based on its filename
+     * @param fileName The filename as {@link String} of expected test graph
+     * @return The {@link TestGraph} or null if doesn't exist
+     */
     public TestGraph get(String fileName) {
         return testGraphs.get(fileName);
     }
 
     /**
      * Returns an iterator over elements of type {@code T}.
-     *
      * @return an Iterator.
      */
     @Override

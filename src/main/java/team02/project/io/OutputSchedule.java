@@ -18,6 +18,13 @@ public class OutputSchedule {
     private OutputSchedule() {
     }
 
+    /**
+     * Outputs the optimal graph in dotfile format. Order of nodes in output file is same as input file.
+     * @param pathName the path to output dotfile
+     * @param context current scheduling context
+     * @param optimalSchedule optimal schedule returned by scheduling algorithm
+     * @throws IOException
+     */
     public static void outputGraph(Path pathName, SchedulingContext context, Schedule optimalSchedule) throws IOException {
         PrintWriter writer = new PrintWriter(pathName.toString());
 

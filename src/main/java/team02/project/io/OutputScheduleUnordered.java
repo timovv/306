@@ -12,6 +12,13 @@ public class OutputScheduleUnordered {
     private OutputScheduleUnordered() {
     }
 
+    /**
+     * Outputs the optimal graph in dotfile format. Nodes are unordered.
+     * This method should perform slightly better than ordered output.
+     * @param pathName the path to output dotfile
+     * @param optimalSchedule optimal schedule returned by scheduling algorithm
+     * @throws IOException
+     */
     public static void outputGraph(Path pathName, Schedule optimalSchedule) throws IOException {
         PrintWriter writer = new PrintWriter(pathName.toString());
 

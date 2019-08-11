@@ -2,6 +2,9 @@ package team02.project.cli;
 
 import static team02.project.cli.CLIConstants.*;
 
+/**
+ * Builds a custom {@link CLIConfig} implementation
+ */
 public class CLIConfigBuilder {
 
     private CLIDefaultConfig config;
