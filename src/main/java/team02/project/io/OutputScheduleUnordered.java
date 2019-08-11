@@ -8,8 +8,8 @@ import java.io.PrintWriter;
 import java.io.IOException;
 import java.nio.file.Path;
 
-public class outputScheduleUnordered {
-    private outputScheduleUnordered() {
+public class OutputScheduleUnordered {
+    private OutputScheduleUnordered() {
     }
 
     public static void outputGraph(Path pathName, Schedule optimalSchedule) throws IOException {

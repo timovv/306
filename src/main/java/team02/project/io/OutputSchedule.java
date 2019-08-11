@@ -14,8 +14,8 @@ import java.nio.file.Path;
 
 import java.util.HashMap;
 
-public class outputSchedule {
-    private outputSchedule() {
+public class OutputSchedule {
+    private OutputSchedule() {
     }
 
     public static void outputGraph(Path pathName, SchedulingContext context, Schedule optimalSchedule) throws IOException {
