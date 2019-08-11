@@ -3,15 +3,16 @@ package team02.project.io;
 import lombok.val;
 import lombok.var;
 import team02.project.algorithm.Schedule;
-import team02.project.algorithm.ScheduledTask;
 import team02.project.algorithm.SchedulingContext;
-import team02.project.graph.Node;
 
-import java.io.*;
-import java.util.HashMap;
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.IOException;
 
-public class output_schedule_unordered {
-    private output_schedule_unordered() {
+public class outputScheduleUnordered {
+    private outputScheduleUnordered() {
     }
 
     public static void outputGraph(String pathName, String fileName, SchedulingContext context, Schedule optimalSchedule) throws IOException {
@@ -34,6 +35,7 @@ public class output_schedule_unordered {
         }
 
         bw.write("}");
+        bw.flush();
         bw.close();
     }
 }

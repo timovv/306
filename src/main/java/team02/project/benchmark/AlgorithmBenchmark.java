@@ -6,8 +6,7 @@ import team02.project.algorithm.SchedulingAlgorithm;
 import team02.project.algorithm.SchedulingContext;
 import team02.project.graph.GraphBuilderImpl;
 import team02.project.io.GraphReader;
-import team02.project.io.output_schedule;
-import team02.project.io.output_schedule_unordered;
+import team02.project.io.outputScheduleUnordered;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -31,12 +30,6 @@ public class AlgorithmBenchmark {
         var schedule = algorithm.calculateOptimal(context);
         long end = System.currentTimeMillis();
 
-        try {
-            String current = new java.io.File(".").getCanonicalPath();
-            output_schedule_unordered.outputGraph(current, "something_else", context, schedule);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
         return new Result(end - start, schedule.getFinishTime());
     }
 

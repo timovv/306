@@ -7,11 +7,16 @@ import team02.project.algorithm.ScheduledTask;
 import team02.project.algorithm.SchedulingContext;
 import team02.project.graph.Node;
 
-import java.io.*;
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.IOException;
+
 import java.util.HashMap;
 
-public class output_schedule {
-    private output_schedule() {
+public class outputSchedule {
+    private outputSchedule() {
     }
 
     public static void outputGraph(String pathName, String fileName, SchedulingContext context, Schedule optimalSchedule) throws IOException {
@@ -39,6 +44,7 @@ public class output_schedule {
             }
         }
         bw.write("}");
+        bw.flush();
         bw.close();
     }
 
