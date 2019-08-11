@@ -25,13 +25,13 @@ public class GraphBuilderImpl implements GraphBuilder {
     }
 
     @Override
-    public void addNode(int id, int weight) {
+    public void addNode(String id, int weight) {
         throwIfBuilt();
         wip.addNode(new MutableNode(id, weight));
     }
 
     @Override
-    public void addEdge(int fromId, int toId, int weight) {
+    public void addEdge(String fromId, String toId, int weight) {
         throwIfBuilt();
         val head = wip.getNode(toId);
         val tail = wip.getNode(fromId);

@@ -7,7 +7,5 @@ public interface Graph {
 
     Set<? extends Node> getNodes();
 
-    Node getNode(int id);
-
-    Graph minus(int nodeId);
+    Node getNode(String id);
 }

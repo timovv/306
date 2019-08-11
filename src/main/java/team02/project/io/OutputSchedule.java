@@ -23,7 +23,7 @@ public class OutputSchedule {
 
         writer.println("digraph \"" + pathName.getFileName() + "\" {");
 
-        HashMap<Integer, ScheduledTask> scheduledTaskHashMap = new HashMap<>();
+        HashMap<String, ScheduledTask> scheduledTaskHashMap = new HashMap<>();
         for (var scheduledTask : optimalSchedule) {
             scheduledTaskHashMap.put(scheduledTask.getTask().getId(), scheduledTask);
         }

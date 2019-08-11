@@ -7,24 +7,24 @@ import java.util.Map;
 
 @Data
 public class MutableNode implements Node {
-    int id;
+    String id;
     int weight;
     Map<Node, Integer> incomingEdges = new HashMap<>();
     Map<Node, Integer> outgoingEdges = new HashMap<>();
 
-    public MutableNode(int id, int weight) {
+    public MutableNode(String id, int weight) {
         this.id = id;
         this.weight = weight;
     }
 
     @Override
     public boolean equals(Object other) {
-        return (other instanceof MutableNode) && id == ((MutableNode)other).id;
+        return (other instanceof MutableNode) && id.equals(((MutableNode) other).getId());
     }
 
     @Override
     public int hashCode() {
-        return id;
+        return id.hashCode();
     }
 
     @Override

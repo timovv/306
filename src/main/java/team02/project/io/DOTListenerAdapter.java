@@ -29,7 +29,7 @@ class DOTListenerAdapter extends DOTBaseListener {
         }
 
         var nodeId = ctx.node_id().id().getText();
-        graphBuilder.addNode(Integer.parseInt(nodeId), getWeight(ctx.attr_list()));
+        graphBuilder.addNode(nodeId, getWeight(ctx.attr_list()));
 }
 
     @Override
@@ -46,7 +46,7 @@ class DOTListenerAdapter extends DOTBaseListener {
 
         var lhsId = ctx.node_id().id().getText();
         var rhsId = ctx.edgeRHS().node_id(0).id().getText();
-        graphBuilder.addEdge(Integer.parseInt(lhsId), Integer.parseInt(rhsId), getWeight(ctx.attr_list()));
+        graphBuilder.addEdge(lhsId, rhsId, getWeight(ctx.attr_list()));
     }
 
     private int getWeight(DOTParser.Attr_listContext context) {
