@@ -21,5 +21,6 @@ public final class CLIConstants {
     public static final boolean DEFAULT_VISUALIZATION = false;
     public static final String DEFAULT_OUTPUT_DOT_FILE_NAME = "INPUT-output.dot";
     public static final String MAIN_ERROR_MESSAGE_PRE = "There has been a problem with parsing arguments: ";
-
+    public static final String INPUT_FILE_NOT_FOUND_ERROR = "The specified input file could not be found.";
+    public static final String OUTPUT_FILE_ALREADY_EXISTS_WARNING = "The output file already exists. It will be overwritten.";
 }
