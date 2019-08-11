@@ -5,6 +5,7 @@ import team02.project.algorithm.SchedulingAlgorithm;
 import team02.project.algorithm.SchedulingContext;
 import team02.project.algorithm.TopologicalSortAlgorithm;
 import team02.project.cli.CLIConfig;
+import team02.project.cli.CLIConstants;
 import team02.project.cli.CLIException;
 import team02.project.cli.CLIParser;
 import team02.project.graph.Graph;
@@ -60,6 +61,17 @@ public class App {
             System.out.println(parser.getHelp());
             System.exit(EXIT_FAILURE);
             return null;
+        }
+
+        // Milestone 1 only: warnings if they configured options which don't change anything yet.
+        if(config.numberOfScheduleProcessors() != DEFAULT_SCHEDULE_PROCESSORS) {
+            System.out.println("Warning: setting the number of processors to schedule currently has no effect.");
+        }
+        if(config.numberOfParallelCores() != DEFAULT_PARALLEL_CORES) {
+            System.out.println("Warning: setting the number of parallel cores to run the algorithm on currently has no effect.");
+        }
+        if(config.isVisualize() != DEFAULT_VISUALIZATION) {
+            System.out.println("Warning: enabling the visualization currently has no effect.");
         }
 
         return config;
