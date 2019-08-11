@@ -7,11 +7,10 @@ import team02.project.algorithm.ScheduledTask;
 import team02.project.algorithm.SchedulingContext;
 import team02.project.graph.Node;
 
-import java.io.FileOutputStream;
-import java.io.OutputStreamWriter;
-import java.io.BufferedWriter;
-import java.io.File;
+import java.io.PrintWriter;
 import java.io.IOException;
+import java.nio.file.Path;
+
 
 import java.util.HashMap;
 
@@ -19,13 +18,10 @@ public class outputSchedule {
     private outputSchedule() {
     }
 
-    public static void outputGraph(String pathName, String fileName, SchedulingContext context, Schedule optimalSchedule) throws IOException {
-        File fname = new File(pathName + "/" + fileName + ".dot");
-        FileOutputStream fos = new FileOutputStream(fname);
-        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fos));
+    public static void outputGraph(Path pathName, SchedulingContext context, Schedule optimalSchedule) throws IOException {
+        PrintWriter writer = new PrintWriter(pathName.toString());
 
-        bw.write("digraph \"" + fileName + "\" {");
-        bw.newLine();
+        writer.println("digraph \"" + pathName.getFileName() + "\" {");
 
         HashMap<Integer, ScheduledTask> scheduledTaskHashMap = new HashMap<>();
         for (var scheduledTask : optimalSchedule) {
@@ -34,18 +30,16 @@ public class outputSchedule {
 
         for (Node n : context.getTaskGraph().getNodes()) {
             String nodeStr = "\t" + n.getId() + " [Weight=" + n.getWeight() + ", Start=" + scheduledTaskHashMap.get(n.getId()).getStartTime() + ", Processor=" + scheduledTaskHashMap.get(n.getId()).getProcessorId() + "];";
-            bw.write(nodeStr);
-            bw.newLine();
+            writer.println(nodeStr);
 
             for (val edge : n.getIncomingEdges().entrySet()) {
                 String edgeStr = "\t" + edge.getKey().getId() + " -> " + n.getId() + " [Weight=" + edge.getValue() + "];";
-                bw.write(edgeStr);
-                bw.newLine();
+                writer.println(edgeStr);
             }
         }
-        bw.write("}");
-        bw.flush();
-        bw.close();
+        writer.println("}");
+        writer.flush();
+        writer.close();
     }
 
 }

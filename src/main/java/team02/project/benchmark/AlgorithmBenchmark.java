@@ -6,9 +6,7 @@ import team02.project.algorithm.SchedulingAlgorithm;
 import team02.project.algorithm.SchedulingContext;
 import team02.project.graph.GraphBuilderImpl;
 import team02.project.io.GraphReader;
-import team02.project.io.outputScheduleUnordered;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.function.Supplier;
 
