@@ -27,6 +27,6 @@ public class BruteForceAlgorithm implements SchedulingAlgorithm {
 
         return complete.stream()
                 .min(Comparator.comparing(Schedule::getFinishTime))
-                .orElseThrow(() -> new RuntimeException("no schedule found wtF?"));
+                .orElseThrow(() -> new RuntimeException("no schedule found"));
     }
 }

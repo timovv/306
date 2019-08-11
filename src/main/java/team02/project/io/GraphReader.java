@@ -18,6 +18,12 @@ public final class GraphReader {
 
     }
 
+    /**
+     * Given a {@link Path} to a dotfile and {@link GraphBuilder}, this method will invoke the appropriate
+     * methods on the GraphBuilder interface for nodes, edges and weights
+     * @param path the {@link Path} to input dotfile
+     * @param builder the {@link GraphBuilder} used to construct Graph
+     */
     public static void readInto(Path path, GraphBuilder builder) {
         try {
             readInto(CharStreams.fromChannel(Files.newByteChannel(path, StandardOpenOption.READ)), builder);
@@ -26,6 +32,12 @@ public final class GraphReader {
         }
     }
 
+    /**
+     * Given a {@link InputStream} to a dotfile and {@link GraphBuilder}, this method will invoke the appropriate
+     * methods on the GraphBuilder interface for nodes, edges and weights
+     * @param inputStream the {@link InputStream} to input dotfile
+     * @param builder the {@link GraphBuilder} used to construct Graph
+     */
     public static void readInto(InputStream inputStream, GraphBuilder builder) {
         try {
             readInto(CharStreams.fromStream(inputStream), builder);
@@ -34,6 +46,12 @@ public final class GraphReader {
         }
     }
 
+    /**
+     * Given a {@link CharStream} to a dotfile and {@link GraphBuilder}, this method will invoke the appropriate
+     * methods on the GraphBuilder interface for nodes, edges and weights
+     * @param stream the {@link CharStream} to input dotfile
+     * @param builder the {@link GraphBuilder} used to construct Graph
+     */
     private static void readInto(CharStream stream, GraphBuilder builder) {
         var lexer = new DOTLexer(stream);
         var tokens = new CommonTokenStream(lexer);
