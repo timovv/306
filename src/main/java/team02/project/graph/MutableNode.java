@@ -1,16 +1,21 @@
 package team02.project.graph;
 
-import lombok.Value;
+import lombok.Data;
 
 import java.util.HashMap;
 import java.util.Map;
 
-@Value
+@Data
 public class MutableNode implements Node {
     int id;
     int weight;
     Map<Node, Integer> incomingEdges = new HashMap<>();
     Map<Node, Integer> outgoingEdges = new HashMap<>();
+
+    public MutableNode(int id, int weight) {
+        this.id = id;
+        this.weight = weight;
+    }
 
     @Override
     public boolean equals(Object other) {
