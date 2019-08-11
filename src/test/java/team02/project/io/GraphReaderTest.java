@@ -48,12 +48,12 @@ public class GraphReaderTest {
         }
 
         @Override
-        public void addNode(int id, int weight) {
+        public void addNode(String id, int weight) {
             output.add("node: " + id + " weight: " + weight);
         }
 
         @Override
-        public void addEdge(int fromId, int toId, int weight) {
+        public void addEdge(String fromId, String toId, int weight) {
             output.add("edge: " + fromId + "," + toId + " weight: " + weight);
         }
 
