@@ -9,6 +9,7 @@ import java.util.Map;
 public class MutableNode implements Node {
     String id;
     int weight;
+    int bottomLevel;
     Map<Node, Integer> incomingEdges = new HashMap<>();
     Map<Node, Integer> outgoingEdges = new HashMap<>();
 
@@ -16,6 +17,8 @@ public class MutableNode implements Node {
         this.id = id;
         this.weight = weight;
     }
+
+
 
     @Override
     public boolean equals(Object other) {

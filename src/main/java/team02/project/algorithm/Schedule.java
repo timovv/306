@@ -13,24 +13,36 @@ import java.util.Set;
  * A {@link Schedule} is a delta encoding containing a new {@link ScheduledTask task assignment}.
  */
 @Value
-public class Schedule implements Iterable<ScheduledTask> {
+public class Schedule implements Iterable<ScheduledTask>, Comparable<Schedule> {
 
     private static final Schedule EMPTY = new Schedule();
 
     Schedule parent;
     ScheduledTask scheduledTask;
     int depth;
+    int cost; // for A* or any other algorithm with heuristic
 
     private Schedule() {
         parent = null;
         scheduledTask = null;
         depth = 0;
+        cost = 0;
     }
 
+    // Constructor without heuristic
     public Schedule(@NonNull Schedule parent, @NonNull ScheduledTask scheduledTask) {
         this.parent = parent;
         this.scheduledTask = scheduledTask;
         this.depth = parent.getDepth() + 1;
+        this.cost = 0;
+    }
+
+    // Constructor with heuristic
+    public Schedule(@NonNull Schedule parent, @NonNull ScheduledTask scheduledTask, int heuristic) {
+        this.parent = parent;
+        this.scheduledTask = scheduledTask;
+        this.depth = parent.getDepth() + 1;
+        this.cost = heuristic;
     }
 
     public static Schedule empty() {
@@ -103,7 +115,8 @@ public class Schedule implements Iterable<ScheduledTask> {
                     }
                 }
 
-                output.add(new Schedule(this, new ScheduledTask(i, startTime, node)));
+                output.add(new Schedule(this, new ScheduledTask(i, startTime, node),
+                        Math.max(this.cost, startTime + node.getBottomLevel())));
             }
 
         }
@@ -149,5 +162,10 @@ public class Schedule implements Iterable<ScheduledTask> {
                 return ret;
             }
         };
+    }
+
+    @Override
+    public int compareTo(Schedule o){
+        return Integer.compare(this.cost, o.cost);
     }
 }

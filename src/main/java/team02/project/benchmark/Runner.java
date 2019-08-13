@@ -1,7 +1,9 @@
 package team02.project.benchmark;
 
 import lombok.var;
+import team02.project.algorithm.AStarAlgorithm;
 import team02.project.algorithm.NaiveBranchBoundAlgorithm;
+import team02.project.algorithm.TopologicalSortAlgorithm;
 import team02.project.benchmark.AlgorithmBenchmark.Result;
 
 public class Runner {

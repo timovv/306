@@ -17,8 +17,14 @@ public interface Node {
 
     /**
      * Get the parent {@link Node nodes} and their associated weight
-     * @return
+     * @return A map of edges and weights
      */
     Map<Node, Integer> getOutgoingEdges();
     Map<Node, Integer> getIncomingEdges();
+
+    /**
+     * Get the bottom level of the node
+     * @return The bottom level
+     */
+    int getBottomLevel();
 }
