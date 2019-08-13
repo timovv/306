@@ -1,9 +1,6 @@
 package team02.project;
 
-import team02.project.algorithm.Schedule;
-import team02.project.algorithm.SchedulingAlgorithm;
-import team02.project.algorithm.SchedulingContext;
-import team02.project.algorithm.TopologicalSortAlgorithm;
+import team02.project.algorithm.*;
 import team02.project.cli.CLIConfig;
 import team02.project.cli.CLIConstants;
 import team02.project.cli.CLIException;
@@ -64,8 +61,8 @@ public class App {
         }
 
         // Milestone 1 only: warnings if they configured options which don't change anything yet.
-        if(config.numberOfScheduleProcessors() != DEFAULT_SCHEDULE_PROCESSORS) {
-            System.out.println("Warning: setting the number of processors to schedule currently has no effect.");
+        if(config.numberOfScheduleProcessors() != DEFAULT_SCHEDULE_PROCESSORS && config.algorithmToUse() == "Topological") {
+            System.out.println("Warning: setting the number of processors to schedule has no effect.");
         }
         if(config.numberOfParallelCores() != DEFAULT_PARALLEL_CORES) {
             System.out.println("Warning: setting the number of parallel cores to run the algorithm on currently has no effect.");
@@ -73,9 +70,6 @@ public class App {
         if(config.isVisualize() != DEFAULT_VISUALIZATION) {
             System.out.println("Warning: enabling the visualization currently has no effect.");
         }
-
-        // Tell them what algorithm we are using
-        System.out.println("Algorithm to use is " + config.algorithmToUse() + ".");
 
         return config;
     }
@@ -91,11 +85,30 @@ public class App {
     }
 
     private static Schedule calculateSchedule(CLIConfig config, Graph graph, SchedulingContext ctx) {
-        System.out.println("Determining solution for "
-                + config.numberOfScheduleProcessors() +
-                " processors on a graph of " + graph.getNodes().size() + " nodes");
-        // TODO: command-line switch to allow users to select algorithm
-        SchedulingAlgorithm algorithm = new TopologicalSortAlgorithm();
+        System.out.println("Finding schedule using " + config.algorithmToUse()
+                + " on" + config.numberOfScheduleProcessors()
+                + " processors on a graph of " + graph.getNodes().size() + " nodes");
+
+        // determine the algorithm to use
+        SchedulingAlgorithm algorithm;
+        switch(config.algorithmToUse()) {
+            case "BnB":
+                algorithm = new NaiveBranchBoundAlgorithm();
+                break;
+            case "A*":
+                //todo add A* algorithm
+                algorithm = new NaiveBranchBoundAlgorithm();
+                break;
+            case "Topological":
+                algorithm = new TopologicalSortAlgorithm();
+                break;
+            default:
+                // could be throw an error
+                algorithm = new TopologicalSortAlgorithm();
+        }
+
+        //todo add timing metrics for demo
+
         return algorithm.calculateOptimal(ctx);
     }
 
