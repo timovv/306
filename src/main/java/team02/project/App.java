@@ -87,7 +87,7 @@ public class App {
 
     private static Schedule calculateSchedule(CLIConfig config, Graph graph, SchedulingContext ctx) {
         System.out.println("Finding schedule using " + config.algorithmToUse()
-                + " on" + config.numberOfScheduleProcessors()
+                + " on " + config.numberOfScheduleProcessors()
                 + " processors on a graph of " + graph.getNodes().size() + " nodes");
 
         // determine the algorithm to use

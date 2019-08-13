@@ -36,7 +36,8 @@ public class OutputSchedule {
         }
 
         for (Node n : context.getTaskGraph().getNodes()) {
-            String nodeStr = "\t" + n.getId() + " [Weight=" + n.getWeight() + ", Start=" + scheduledTaskHashMap.get(n.getId()).getStartTime() + ", Processor=" + scheduledTaskHashMap.get(n.getId()).getProcessorId() + "];";
+            int processorId = scheduledTaskHashMap.get(n.getId()).getProcessorId() + 1; // cheat to get ids starting from 1
+            String nodeStr = "\t" + n.getId() + " [Weight=" + n.getWeight() + ", Start=" + scheduledTaskHashMap.get(n.getId()).getStartTime() + ", Processor=" + processorId + "];";
             writer.println(nodeStr);
 
             for (val edge : n.getIncomingEdges().entrySet()) {
