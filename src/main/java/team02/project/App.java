@@ -1,5 +1,6 @@
 package team02.project;
 
+import lombok.var;
 import team02.project.algorithm.*;
 import team02.project.cli.CLIConfig;
 import team02.project.cli.CLIConstants;
@@ -96,8 +97,7 @@ public class App {
                 algorithm = new NaiveBranchBoundAlgorithm();
                 break;
             case "A*":
-                //todo add A* algorithm
-                algorithm = new NaiveBranchBoundAlgorithm();
+                algorithm = new AStarAlgorithm();
                 break;
             case "Topological":
                 algorithm = new TopologicalSortAlgorithm();
@@ -107,9 +107,15 @@ public class App {
                 algorithm = new TopologicalSortAlgorithm();
         }
 
-        //todo add timing metrics for demo
+        // time how long it takes to run
+        long start = System.currentTimeMillis();
+        var schedule = algorithm.calculateOptimal(ctx);
+        long end = System.currentTimeMillis();
+        long time = end - start;
 
-        return algorithm.calculateOptimal(ctx);
+        System.out.println("Time taken: " + time + "ms.");
+
+        return schedule;
     }
 
     private static Graph createGraph(Path inputFile) {
