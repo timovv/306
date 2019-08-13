@@ -11,6 +11,7 @@ public class CLIDefaultConfig implements CLIConfig {
     protected int parallelCores = DEFAULT_PARALLEL_CORES;
     protected boolean visualize = DEFAULT_VISUALIZATION;
     protected String outputDOTFile = DEFAULT_OUTPUT_DOT_FILE_NAME;
+    protected String algorithmToUse = DEFAULT_ALGORITHM_TO_USE;
 
     protected CLIDefaultConfig() {}
 
@@ -40,11 +41,17 @@ public class CLIDefaultConfig implements CLIConfig {
     }
 
     @Override
+    public String algorithmToUse() {
+        return algorithmToUse;
+    }
+
+    @Override
     public String toString() {
         return "The name of the input DOT file is: " + inputDOTFile() + "\n"
                 + "The number of schedule cores is: " + numberOfScheduleProcessors() + "\n"
                 + "The number of parallel cores is: " + numberOfParallelCores() + "\n"
                 + "Visualize: " + isVisualize() + "\n"
-                + "The name of the output DOT file is: " + outputDOTFile();
+                + "The name of the output DOT file is: " + outputDOTFile() + "\n"
+                + "The algorithm to use is: " + algorithmToUse();
     }
 }

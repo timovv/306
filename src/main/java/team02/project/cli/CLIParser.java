@@ -2,6 +2,9 @@ package team02.project.cli;
 
 import org.apache.commons.cli.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static team02.project.cli.CLIConstants.*;
 
 public class CLIParser {
@@ -17,6 +20,7 @@ public class CLIParser {
         int parallelCores = getParallelCores(cmd);
         boolean visualize = getVisualizeOption(cmd);
         String outputDOTFile = getOutputFileName(cmd);
+        String algorithmToUse = getAlgorithmToUse(cmd);
 
         CLIConfigBuilder builder = new CLIConfigBuilder();
         CLIConfig config = builder.setInputDOTFile(inputDOTFile)
@@ -24,6 +28,7 @@ public class CLIParser {
                 .setNumberOfParallelCores(parallelCores)
                 .setVisualize(visualize)
                 .setOutputDOTFile(outputDOTFile)
+                .setAlgorithmToUse(algorithmToUse)
                 .build();
 
         return config;
@@ -102,6 +107,25 @@ public class CLIParser {
         return outputFileName;
     }
 
+    private String getAlgorithmToUse(CommandLine cmd) {
+        // valid algorithm check:
+        List<String> validAlgorithms = new ArrayList<>();
+        validAlgorithms.add("Topological");
+        validAlgorithms.add("A*");
+        validAlgorithms.add("BnB");
+
+        String algorithmToUse = DEFAULT_ALGORITHM_TO_USE;
+
+        if(cmd.hasOption(ALGORITHM_FLAG)) {
+            for (String s : validAlgorithms) {
+                if(s.equalsIgnoreCase(cmd.getOptionValue(ALGORITHM_FLAG))){
+                    algorithmToUse = s;
+                }
+            }
+        }
+        return algorithmToUse;
+    }
+
     private boolean invalidNumberOfArgs(int length) {
         return length < 2;
     }
@@ -114,6 +138,8 @@ public class CLIParser {
         options.addOption(VISUALIZE_FLAG, VISUALISE_OPTION_DESCRIPTION);
 
         options.addOption(CUSTOM_OUTPUT_NAME_FLAG, true, OUTPUT_NAME_OPTION_DESCRIPTION);
+
+        options.addOption(ALGORITHM_FLAG, true, ALGORITHM_OPTION_DESCRIPTION);
 
         return options;
     }

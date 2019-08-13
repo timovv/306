@@ -70,4 +70,11 @@ public class CLIConfigBuilder {
         int length = inputDOTFile.length();
         return inputDOTFile.substring(length - 4, length).equals(DOT_SUFFIX);
     }
+
+    public CLIConfigBuilder setAlgorithmToUse(String algorithmToUse) {
+        if(!algorithmToUse.equals(DEFAULT_ALGORITHM_TO_USE)){
+            config.algorithmToUse = algorithmToUse;
+        }
+        return this;
+    }
 }

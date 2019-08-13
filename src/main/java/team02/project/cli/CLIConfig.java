@@ -39,4 +39,10 @@ public interface CLIConfig {
      * @return The output's filename
      */
     public String outputDOTFile();
+
+    /**
+     * Get the algorithm to use.
+     * @return The name of the algorithm to use
+     */
+    public String algorithmToUse();
 }

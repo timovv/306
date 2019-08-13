@@ -74,6 +74,9 @@ public class App {
             System.out.println("Warning: enabling the visualization currently has no effect.");
         }
 
+        // Tell them what algorithm we are using
+        System.out.println("Algorithm to use is " + config.algorithmToUse() + ".");
+
         return config;
     }
 

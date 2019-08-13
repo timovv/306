@@ -23,4 +23,10 @@ public final class CLIConstants {
     public static final String MAIN_ERROR_MESSAGE_PRE = "There has been a problem with parsing arguments: ";
     public static final String INPUT_FILE_NOT_FOUND_ERROR = "The specified input file could not be found.";
     public static final String OUTPUT_FILE_ALREADY_EXISTS_WARNING = "The output file already exists. It will be overwritten.";
+
+    // for the demo:
+    public static final String ALGORITHM_FLAG = "a";
+    public static final String ALGORITHM_OPTION_DESCRIPTION = "Algorithm to use, options are" +
+            "\"Topological\", \"BnB\", \"A*\"(default is Topological)";
+    public static final String DEFAULT_ALGORITHM_TO_USE = "Topological";
 }
