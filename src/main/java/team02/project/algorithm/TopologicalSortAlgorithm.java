@@ -22,7 +22,7 @@ public class TopologicalSortAlgorithm implements SchedulingAlgorithm {
         Schedule output = Schedule.empty();
         int startTime = 0;
         for(Node node : order) {
-            output = new Schedule(output, new ScheduledTask(1, startTime, node));
+            output = new Schedule(output, new ScheduledTask(0, startTime, node));
             startTime += node.getWeight();
         }
 
