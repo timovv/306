@@ -1,6 +1,6 @@
 package team02.project.graph;
 
-import java.util.Set;
+import java.util.List;
 
 public interface Graph {
     /**
@@ -11,9 +11,9 @@ public interface Graph {
 
     /**
      * Get all nodes in the graph
-     * @return A {@link Set} of {@link Node}
+     * @return A {@link List} of {@link Node}
      */
-    Set<? extends Node> getNodes();
+    List<? extends Node> getNodes();
 
     /**
      * Lookup and return a node via it's id

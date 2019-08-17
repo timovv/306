@@ -1,17 +1,13 @@
 package team02.project.graph;
 
 import lombok.Data;
-import lombok.val;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @Data
 public class MutableGraph implements Graph {
     private String id;
-    private Set<MutableNode> nodes = new HashSet<>();
+    private List<MutableNode> nodes = new ArrayList<>();
     private Map<String, MutableNode> lookup = new HashMap<>();
 
     @Override
