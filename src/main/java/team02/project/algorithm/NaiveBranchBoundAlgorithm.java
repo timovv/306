@@ -1,6 +1,9 @@
 package team02.project.algorithm;
 
 import lombok.val;
+import team02.project.algorithm.solnspace.PartialSolution;
+import team02.project.algorithm.solnspace.SolutionSpace;
+import team02.project.algorithm.solnspace.els.ELSSolutionSpace;
 
 import java.util.LinkedList;
 
@@ -11,30 +14,31 @@ public class NaiveBranchBoundAlgorithm implements SchedulingAlgorithm {
     @Override
     public Schedule calculateOptimal(SchedulingContext ctx) {
         int ubound = Integer.MAX_VALUE; // cache the upper bound
-        Schedule best = null;
+        PartialSolution best = null;
 
-        LinkedList<Schedule> scheduleStack = new LinkedList<>();
-        scheduleStack.add(Schedule.empty());
+        LinkedList<PartialSolution> scheduleStack = new LinkedList<>();
+        SolutionSpace solutionSpace = new ELSSolutionSpace();
+        scheduleStack.add(solutionSpace.getRoot(ctx));
         while(!scheduleStack.isEmpty()) {
             val schedule = scheduleStack.pop();
-            if (schedule.isCompleteFor(ctx)) { // don't expand
-                val finishTime = schedule.getFinishTime();
-                if(finishTime < ubound) { // update the upper bound
+            if (schedule.isComplete()) { // don't expand
+                val estimate = schedule.getEstimate();
+                if(estimate < ubound) { // update the upper bound
                     best = schedule;
-                    ubound = finishTime;
+                    ubound = estimate;
                 }
 
                 continue;
             }
 
-            val children = schedule.expand(ctx); // branch
+            val children = schedule.expand(); // branch
             for(val child : children) {
-                if(child.getFinishTime() < ubound) { // bound
+                if(child.getEstimate() < ubound) { // bound
                     scheduleStack.push(child);
                 }
             }
         }
 
-        return best;
+        return best.makeComplete();
     }
 }

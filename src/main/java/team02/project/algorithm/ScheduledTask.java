@@ -12,7 +12,7 @@ public class ScheduledTask {
     int startTime;
     Node task;
 
-    int getFinishTime() {
+    public int getFinishTime() {
         return getStartTime() + task.getWeight();
     }
 }
