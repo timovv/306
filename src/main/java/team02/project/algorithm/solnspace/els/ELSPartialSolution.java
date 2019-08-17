@@ -47,16 +47,21 @@ public class ELSPartialSolution implements PartialSolution, Iterable<ScheduledTa
     public Set<PartialSolution> expand() {
         Set<PartialSolution> output = new HashSet<>();
 
+        Set<Node> nodesAlreadyInSchedule = new HashSet<>();
+        for(val node : this) {
+            nodesAlreadyInSchedule.add(node.getTask());
+        }
+
         outer:
         for(val node : context.getTaskGraph().getNodes()) {
             // not a candidate if it's already in the schedule
-            if(Iterators.contains(nodesIterator(), node)) {
+            if(nodesAlreadyInSchedule.contains(node)) {
                 continue;
             }
 
             // not a candidate if it has incoming edges which are not satisfied
             for(val edge : node.getIncomingEdges().entrySet()) {
-                if(!Iterators.contains(nodesIterator(), edge.getKey())) {
+                if(!nodesAlreadyInSchedule.contains(edge.getKey())) {
                     continue outer;
                 }
             }
