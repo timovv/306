@@ -3,55 +3,47 @@ package team02.project.algorithm.solnspace.ao;
 import team02.project.algorithm.SchedulingContext;
 import team02.project.graph.Node;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-/**
- * Allocations of levels for a specific processor
- */
 public class Allocation {
 
-    List<List<Node>> levels;
+    private final List<List<Node>> tasks;
 
-    private Allocation(List<List<Node>> levels) {
-        this.levels = levels;
+    private Allocation(List<List<Node>> tasks) {
+        this.tasks = tasks;
     }
 
-    public Allocation getAllocation(SchedulingContext context, APartialSolution partialSolution, int processorId) {
-        // do the topological for each processor
+    public static Allocation fromAPartialSolution(APartialSolution alloc) {
+        SchedulingContext ctx = alloc.getContext();
+        List<List<Node>> tasks = new ArrayList<>(ctx.getProcessorCount());
+        for(int i = 0; i < ctx.getProcessorCount(); ++i) {
+            tasks.add(new ArrayList<>());
+        }
 
-        List<List<Node>> levels = new ArrayList<>();
+        APartialSolution current = alloc;
+        while(!current.isEmpty()) {
+            tasks.get(current.getProcessor()).add(current.getTask());
+            current = current.getParent();
+        }
 
-        LinkedList<Node> queue = context.getTaskGraph().getNodes().stream().filter(x -> x.getIncomingEdges().isEmpty())
-                .collect(Collectors.toCollection(LinkedList::new));
+        return new Allocation(tasks);
+    }
 
-        Map<Node, Integer> nodeLevels = new HashMap<>();
+    public List<Node> getTasksFor(int processor) {
+        return tasks.get(processor);
+    }
 
-        while(!queue.isEmpty()) {
-            Node current = queue.poll();
-
-            int maxParentLevel = current.getIncomingEdges().keySet().stream()
-                    .mapToInt(nodeLevels::get)
-                    .max()
-                    .orElse(0);
-
-            int currentLevel = maxParentLevel;
-            if(partialSolution.getProcessorFor(current) == processorId) {
-                ++currentLevel;
-                if(levels.size() == currentLevel) {
-                    List<Node> thisLevel = new ArrayList<>();
-                    thisLevel.add(current);
-                    levels.add(thisLevel);
-                } else {
-                    levels.get(currentLevel - 1).add(current);
-                }
-            }
-
-            nodeLevels.put(current, currentLevel);
-
-            for(Node child : current.getOutgoingEdges().keySet()) {
-                queue.offer(child);
+    public Map<Node, Integer> createProcessorLookupTable() {
+        Map<Node, Integer> output = new HashMap<>();
+        for(int i = 0; i < tasks.size(); ++i) {
+            for(Node node : tasks.get(i)) {
+                output.put(node, i);
             }
         }
+
+        return output;
     }
 }

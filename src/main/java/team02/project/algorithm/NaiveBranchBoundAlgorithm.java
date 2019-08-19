@@ -3,6 +3,7 @@ package team02.project.algorithm;
 import lombok.val;
 import team02.project.algorithm.solnspace.PartialSolution;
 import team02.project.algorithm.solnspace.SolutionSpace;
+import team02.project.algorithm.solnspace.ao.AOSolutionSpace;
 import team02.project.algorithm.solnspace.els.ELSSolutionSpace;
 
 import java.util.LinkedList;
@@ -17,7 +18,7 @@ public class NaiveBranchBoundAlgorithm implements SchedulingAlgorithm {
         PartialSolution best = null;
 
         LinkedList<PartialSolution> scheduleStack = new LinkedList<>();
-        SolutionSpace solutionSpace = new ELSSolutionSpace();
+        SolutionSpace solutionSpace = new AOSolutionSpace();
         scheduleStack.add(solutionSpace.getRoot(ctx));
         while(!scheduleStack.isEmpty()) {
             val schedule = scheduleStack.pop();
@@ -39,6 +40,7 @@ public class NaiveBranchBoundAlgorithm implements SchedulingAlgorithm {
             }
         }
 
+        assert best != null;
         return best.makeComplete();
     }
 }

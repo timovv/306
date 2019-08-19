@@ -7,6 +7,6 @@ import team02.project.algorithm.solnspace.SolutionSpace;
 public class AOSolutionSpace implements SolutionSpace {
     @Override
     public PartialSolution getRoot(SchedulingContext ctx) {
-        return null;
+        return APartialSolution.makeEmpty(ctx);
     }
 }

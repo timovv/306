@@ -5,7 +5,6 @@ import team02.project.algorithm.SchedulingContext;
 import team02.project.algorithm.solnspace.PartialSolution;
 import team02.project.graph.Node;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -45,23 +44,24 @@ public class APartialSolution implements PartialSolution {
     @Override
     public Set<PartialSolution> expand() {
         if(isCompleteAllocation()) {
-            // should do OPartialSolution stuff
-            return null;
+            Set<PartialSolution> output = new HashSet<>();
+            output.add(OPartialSolution.makeEmpty(context, Allocation.fromAPartialSolution(this)));
+            return output;
         }
 
         Set<PartialSolution> output = new HashSet<>();
 
         // get the next one from nodesToSchedule
-        Node next = context.getTaskGraph().getNodes().get(depth);
+        Node next = getContext().getTaskGraph().getNodes().get(getDepth());
 
         // add to processors with tasks
         for(int i = 0; i < processorsWithTasks; i++) {
-            output.add(new APartialSolution(this.context, this, next, i, depth + 1, processorsWithTasks));
+            output.add(new APartialSolution(this.getContext(), this, next, i, getDepth() + 1, processorsWithTasks));
         }
 
         // adding to empty set if available
-        if(processorsWithTasks < context.getProcessorCount()) {
-            output.add(new APartialSolution(context, this, next, processorsWithTasks, depth + 1, processorsWithTasks + 1));
+        if(processorsWithTasks < getContext().getProcessorCount()) {
+            output.add(new APartialSolution(getContext(), this, next, processorsWithTasks, getDepth() + 1, processorsWithTasks + 1));
         }
 
         return output;
@@ -69,18 +69,22 @@ public class APartialSolution implements PartialSolution {
 
     public int getProcessorFor(Node task) {
         APartialSolution current = this;
-        while(current.parent != null) {
-            if(current.task.equals(task)) {
-                return current.processor;
+        while(!isEmpty()) {
+            if(current.getTask().equals(task)) {
+                return current.getProcessor();
             }
-            current = current.parent;
+            current = current.getParent();
         }
 
         return -1;
     }
 
+    public boolean isEmpty() {
+        return getParent() == null;
+    }
+
     private boolean isCompleteAllocation() {
-        return depth == context.getTaskGraph().getNodes().size();
+        return getDepth() == getContext().getTaskGraph().getNodes().size();
     }
 
     @Override
@@ -90,6 +94,26 @@ public class APartialSolution implements PartialSolution {
 
     @Override
     public Schedule makeComplete() {
-        return null;
+        throw new UnsupportedOperationException();
+    }
+
+    public SchedulingContext getContext() {
+        return context;
+    }
+
+    public int getProcessor() {
+        return processor;
+    }
+
+    public Node getTask() {
+        return task;
+    }
+
+    public int getDepth() {
+        return depth;
+    }
+
+    public APartialSolution getParent() {
+        return parent;
     }
 }

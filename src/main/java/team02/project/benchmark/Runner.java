@@ -10,7 +10,7 @@ public class Runner {
         System.out.println("Starting...");
 
         var loader = new TestGraphLoader(
-                (nodes, procs) -> nodes <= 10 && procs <= 2,
+                (nodes, procs) -> nodes <= 7 && procs == 4,
                 1);
 
         var benchmark = new AlgorithmBenchmark(NaiveBranchBoundAlgorithm::new);
@@ -25,6 +25,10 @@ public class Runner {
         System.out.println(name
                 + "\t"
                 + ((expectedLength == actualLength) ? "Optimal" : "Not Optimal")
+                + "\t"
+                + "Expected: " + expectedLength
+                + "\t"
+                + "Actual: " + actualLength
                 + "\t"
                 + timeTaken
                 + "ms"
