@@ -30,7 +30,7 @@ public class ELSPartialSolution implements PartialSolution, Iterable<ScheduledTa
     }
 
     @Override
-    public int getEstimate() {
+    public int getEstimatedFinishTime() {
         if(isEmpty()) {
             return 0;
         }

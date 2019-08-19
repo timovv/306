@@ -18,32 +18,60 @@ public class APartialSolution implements PartialSolution {
     private int depth; // also used to index next node to schedule
     private APartialSolution parent;
 
+    private int[] loads;
+
     /**
      * The number of processors that have already got at least 1 task.
      */
     private int processorsWithTasks;
 
     public static APartialSolution makeEmpty(SchedulingContext context) {
-        return new APartialSolution(context, null ,null, 0, 0, 0);
+        return new APartialSolution(context,
+                null,
+                null,
+                0,
+                0,
+                0,
+                new int[context.getProcessorCount()]
+        );
     }
 
-    private APartialSolution(SchedulingContext context, APartialSolution parent, Node task, int processor, int depth, int processorsWithTasks) {
+    private APartialSolution(SchedulingContext context,
+                             APartialSolution parent,
+                             Node task,
+                             int processor,
+                             int depth,
+                             int processorsWithTasks,
+                             int[] loads) {
         this.context = context;
         this.parent = parent;
         this.processor = processor;
         this.task = task;
         this.depth = depth;
         this.processorsWithTasks = processorsWithTasks;
+        this.loads = loads;
     }
 
     @Override
-    public int getEstimate() {
-        return 0;
+    public int getEstimatedFinishTime() {
+        return getMaxLoad();
+    }
+
+    private int getMaxLoad() {
+
+        int max = 0;
+        for(int i = 0; i < loads.length; ++i) {
+            if(max < loads[i]) {
+                max = loads[i];
+            }
+        }
+
+        return max;
     }
 
     @Override
     public Set<PartialSolution> expand() {
-        if(isCompleteAllocation()) {
+        if (isCompleteAllocation()) {
             Set<PartialSolution> output = new HashSet<>();
             output.add(OPartialSolution.makeEmpty(context, Allocation.fromAPartialSolution(this)));
             return output;
@@ -55,13 +83,29 @@ public class APartialSolution implements PartialSolution {
         Node next = getContext().getTaskGraph().getNodes().get(getDepth());
 
         // add to processors with tasks
-        for(int i = 0; i < processorsWithTasks; i++) {
-            output.add(new APartialSolution(this.getContext(), this, next, i, getDepth() + 1, processorsWithTasks));
+        for (int i = 0; i < processorsWithTasks; i++) {
+            int[] newLoads = new int[getContext().getProcessorCount()];
+            System.arraycopy(loads, 0, newLoads, 0, loads.length);
+            newLoads[i] += next.getWeight();
+
+            output.add(new APartialSolution(
+                    this.getContext(),
+                    this,
+                    next,
+                    i,
+                    getDepth() + 1,
+                    processorsWithTasks,
+                    newLoads)
+            );
         }
 
         // adding to empty set if available
-        if(processorsWithTasks < getContext().getProcessorCount()) {
-            output.add(new APartialSolution(getContext(), this, next, processorsWithTasks, getDepth() + 1, processorsWithTasks + 1));
+        if (processorsWithTasks < getContext().getProcessorCount()) {
+            int[] newLoads = new int[getContext().getProcessorCount()];
+            System.arraycopy(loads, 0, newLoads, 0, loads.length);
+            newLoads[processorsWithTasks] += next.getWeight();
+            output.add(new APartialSolution(getContext(), this, next, processorsWithTasks, getDepth() + 1,
+                    processorsWithTasks + 1, newLoads));
         }
 
         return output;
@@ -69,8 +113,8 @@ public class APartialSolution implements PartialSolution {
 
     public int getProcessorFor(Node task) {
         APartialSolution current = this;
-        while(!isEmpty()) {
-            if(current.getTask().equals(task)) {
+        while (!isEmpty()) {
+            if (current.getTask().equals(task)) {
                 return current.getProcessor();
             }
             current = current.getParent();

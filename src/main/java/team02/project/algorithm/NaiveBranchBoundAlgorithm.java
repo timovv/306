@@ -23,7 +23,7 @@ public class NaiveBranchBoundAlgorithm implements SchedulingAlgorithm {
         while(!scheduleStack.isEmpty()) {
             val schedule = scheduleStack.pop();
             if (schedule.isComplete()) { // don't expand
-                val estimate = schedule.getEstimate();
+                val estimate = schedule.getEstimatedFinishTime();
                 if(estimate < ubound) { // update the upper bound
                     best = schedule;
                     ubound = estimate;
@@ -34,7 +34,7 @@ public class NaiveBranchBoundAlgorithm implements SchedulingAlgorithm {
 
             val children = schedule.expand(); // branch
             for(val child : children) {
-                if(child.getEstimate() < ubound) { // bound
+                if(child.getEstimatedFinishTime() < ubound) { // bound
                     scheduleStack.push(child);
                 }
             }

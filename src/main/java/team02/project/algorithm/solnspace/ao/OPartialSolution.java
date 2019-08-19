@@ -32,11 +32,11 @@ public class OPartialSolution implements PartialSolution {
     }
 
     @Override
-    public int getEstimate() {
+    public int getEstimatedFinishTime() {
         if(isComplete()) {
             return makeComplete().getFinishTime();
         } else {
-            return 0;
+            return allocation.getEstimatedFinishTime();
         }
     }
 

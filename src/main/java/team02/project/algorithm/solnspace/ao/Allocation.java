@@ -11,9 +11,11 @@ import java.util.Map;
 public class Allocation {
 
     private final List<List<Node>> tasks;
+    private final int estimatedCost;
 
-    private Allocation(List<List<Node>> tasks) {
+    private Allocation(List<List<Node>> tasks, int estimatedCost) {
         this.tasks = tasks;
+        this.estimatedCost = estimatedCost;
     }
 
     public static Allocation fromAPartialSolution(APartialSolution alloc) {
@@ -29,7 +31,7 @@ public class Allocation {
             current = current.getParent();
         }
 
-        return new Allocation(tasks);
+        return new Allocation(tasks, alloc.getEstimatedFinishTime());
     }
 
     public List<Node> getTasksFor(int processor) {
@@ -45,5 +47,9 @@ public class Allocation {
         }
 
         return output;
+    }
+
+    public int getEstimatedFinishTime() {
+        return estimatedCost;
     }
 }
