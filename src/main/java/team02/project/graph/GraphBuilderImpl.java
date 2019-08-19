@@ -23,10 +23,10 @@ public class GraphBuilderImpl implements GraphBuilder {
         wip.getNodes().sort((a, b) -> {
             if (a.getDependencies().contains(b)) {
                 // a depends on b => (a > b)
-                return 1;
+                return -1;
             } else if (b.getDependencies().contains(a)) {
                 // b depends on a => (b > a)
-                return -1;
+                return 1;
             } else {
                 return 0;
             }
