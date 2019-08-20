@@ -16,6 +16,10 @@ public interface Node {
      */
     int getWeight();
 
+
+    int getBottomLevel();
+    int getTopLevel();
+
     /**
      * Get the parent {@link Node nodes} and their associated weight
      * @return

@@ -21,4 +21,5 @@ public interface Graph {
      * @return The {@link Node} with corresponding id
      */
     Node getNode(String id);
+
 }

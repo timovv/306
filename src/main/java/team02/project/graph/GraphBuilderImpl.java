@@ -5,7 +5,9 @@ import lombok.val;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Queue;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class GraphBuilderImpl implements GraphBuilder {
     private MutableGraph wip = new MutableGraph();
@@ -23,10 +25,10 @@ public class GraphBuilderImpl implements GraphBuilder {
         wip.getNodes().sort((a, b) -> {
             if (a.getDependencies().contains(b)) {
                 // a depends on b => (a > b)
-                return -1;
+                return 1;
             } else if (b.getDependencies().contains(a)) {
                 // b depends on a => (b > a)
-                return 1;
+                return -1;
             } else {
                 return 0;
             }
@@ -50,6 +52,48 @@ public class GraphBuilderImpl implements GraphBuilder {
             }
 
             node.getDependencies().addAll(dependencies);
+        }
+        calculateNodeLevels(true);
+        calculateNodeLevels(false);
+    }
+
+    private void calculateNodeLevels(boolean isBottomLevel) {
+        // do the BFS to get bottom levels of wip
+
+        Queue<MutableNode> queue = wip.getNodes().stream()
+                                      .filter(x -> {
+                                          if (isBottomLevel) {
+                                              return x.getOutgoingEdges().isEmpty();
+                                          } else {
+                                              return x.getIncomingEdges().isEmpty();
+                                          }
+                                      })
+                                      .collect(Collectors.toCollection(LinkedList::new));
+
+        while(!queue.isEmpty()){
+            val node = queue.poll();
+            Set<Node> neighbours;
+            if (isBottomLevel) {
+                neighbours = node.getOutgoingEdges().keySet();
+            } else {
+                neighbours = node.getIncomingEdges().keySet();
+            }
+            val level = neighbours.stream()
+                                  .mapToInt(Node::getTopLevel)
+                                  .max()
+                                  .orElse(0) + node.getWeight();
+
+            if (isBottomLevel) {
+                node.setBottomLevel(level);
+                for(val node2 : node.getIncomingEdges().keySet()) {
+                    queue.offer((MutableNode)node2);
+                }
+            } else {
+                node.setTopLevel(level);
+                for(val node2 : node.getOutgoingEdges().keySet()) {
+                    queue.offer((MutableNode)node2);
+                }
+            }
         }
     }
 
