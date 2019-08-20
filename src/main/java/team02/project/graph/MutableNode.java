@@ -3,7 +3,9 @@ package team02.project.graph;
 import lombok.Data;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 @Data
 public class MutableNode implements Node {
@@ -11,6 +13,7 @@ public class MutableNode implements Node {
     int weight;
     Map<Node, Integer> incomingEdges = new HashMap<>();
     Map<Node, Integer> outgoingEdges = new HashMap<>();
+    Set<Node> dependencies = new HashSet<>();
 
     public MutableNode(String id, int weight) {
         this.id = id;

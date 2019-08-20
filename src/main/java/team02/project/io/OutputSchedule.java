@@ -31,7 +31,7 @@ public class OutputSchedule {
         writer.println("digraph \"" + pathName.getFileName() + "\" {");
 
         HashMap<String, ScheduledTask> scheduledTaskHashMap = new HashMap<>();
-        for (var scheduledTask : optimalSchedule) {
+        for (var scheduledTask : optimalSchedule.getTasks()) {
             scheduledTaskHashMap.put(scheduledTask.getTask().getId(), scheduledTask);
         }
 

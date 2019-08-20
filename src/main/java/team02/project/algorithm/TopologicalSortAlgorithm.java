@@ -2,7 +2,9 @@ package team02.project.algorithm;
 
 import team02.project.graph.Node;
 
+import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.Set;
 
 /**
  * Simple algorithm that calculates a valid (but not optimal) schedule
@@ -19,14 +21,14 @@ public class TopologicalSortAlgorithm implements SchedulingAlgorithm {
             visit(order, node);
         }
 
-        Schedule output = Schedule.empty();
+        Set<ScheduledTask> output = new HashSet<>();
         int startTime = 0;
         for(Node node : order) {
-            output = new Schedule(output, new ScheduledTask(1, startTime, node));
+            output.add(new ScheduledTask(1, startTime, node));
             startTime += node.getWeight();
         }
 
-        return output;
+        return new Schedule(output);
     }
 
     private void visit(LinkedHashSet<Node> order, Node toVisit) {
