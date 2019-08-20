@@ -2,7 +2,6 @@ package team02.project.graph;
 
 import lombok.val;
 
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Queue;
@@ -33,7 +32,8 @@ public class GraphBuilderImpl implements GraphBuilder {
                 return 0;
             }
         });
-
+        calculateBottomLevels();
+        calculateTopLevels();
         return wip;
     }
 
@@ -53,46 +53,45 @@ public class GraphBuilderImpl implements GraphBuilder {
 
             node.getDependencies().addAll(dependencies);
         }
-        calculateNodeLevels(true);
-        calculateNodeLevels(false);
     }
 
-    private void calculateNodeLevels(boolean isBottomLevel) {
+    private void calculateBottomLevels() {
         // do the BFS to get bottom levels of wip
-
         Queue<MutableNode> queue = wip.getNodes().stream()
-                                      .filter(x -> {
-                                          if (isBottomLevel) {
-                                              return x.getOutgoingEdges().isEmpty();
-                                          } else {
-                                              return x.getIncomingEdges().isEmpty();
-                                          }
-                                      })
-                                      .collect(Collectors.toCollection(LinkedList::new));
+                .filter(x -> x.getOutgoingEdges().isEmpty())
+                .collect(Collectors.toCollection(LinkedList::new));
 
         while(!queue.isEmpty()){
             val node = queue.poll();
-            Set<Node> neighbours;
-            if (isBottomLevel) {
-                neighbours = node.getOutgoingEdges().keySet();
-            } else {
-                neighbours = node.getIncomingEdges().keySet();
-            }
-            val level = neighbours.stream()
-                                  .mapToInt(Node::getTopLevel)
-                                  .max()
-                                  .orElse(0) + node.getWeight();
+            val bottomLevel = node.getOutgoingEdges().keySet()
+                    .stream()
+                    .mapToInt(Node::getBottomLevel)
+                    .max()
+                    .orElse(0) + node.getWeight();
+            node.setBottomLevel(bottomLevel);
 
-            if (isBottomLevel) {
-                node.setBottomLevel(level);
-                for(val node2 : node.getIncomingEdges().keySet()) {
-                    queue.offer((MutableNode)node2);
-                }
-            } else {
-                node.setTopLevel(level);
-                for(val node2 : node.getOutgoingEdges().keySet()) {
-                    queue.offer((MutableNode)node2);
-                }
+            for(val node2 : node.getIncomingEdges().keySet()) {
+                queue.offer((MutableNode)node2);
+            }
+        }
+    }
+
+    private void calculateTopLevels() {
+        Queue<MutableNode> queue = wip.getNodes().stream()
+                .filter(x -> x.getIncomingEdges().isEmpty())
+                .collect(Collectors.toCollection(LinkedList::new));
+
+        while(!queue.isEmpty()){
+            val node = queue.poll();
+            val topLevel = node.getIncomingEdges().keySet()
+                    .stream()
+                    .mapToInt(Node::getTopLevel)
+                    .max()
+                    .orElse(0) + node.getWeight();
+            node.setTopLevel(topLevel);
+
+            for(val node2 : node.getOutgoingEdges().keySet()) {
+                queue.offer((MutableNode)node2);
             }
         }
     }

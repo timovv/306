@@ -1,6 +1,7 @@
 package team02.project.graph;
 
 import java.util.List;
+import java.util.Queue;
 
 public interface Graph {
     /**

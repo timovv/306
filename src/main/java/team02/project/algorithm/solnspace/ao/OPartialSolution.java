@@ -18,17 +18,21 @@ public class OPartialSolution implements PartialSolution {
     private final int depth;
     private final int processor;
 
-    private OPartialSolution(SchedulingContext context, Allocation allocation, OPartialSolution parent, Node task, int depth, int processor) {
+    private final int estimatedEarliestStart;
+
+    private OPartialSolution(SchedulingContext context, Allocation allocation, OPartialSolution parent, Node task,
+                             int depth, int processor, int estimatedEarliestStart) {
         this.context = context;
         this.allocation = allocation;
         this.parent = parent;
         this.task = task;
         this.depth = depth;
         this.processor = processor;
+        this.estimatedEarliestStart = estimatedEarliestStart;
     }
 
     public static OPartialSolution makeEmpty(SchedulingContext ctx, Allocation allocation) {
-        return new OPartialSolution(ctx, allocation, null, null, 0, 0);
+        return new OPartialSolution(ctx, allocation, null, null, 0, 0, 0);
     }
 
     @Override
@@ -63,7 +67,8 @@ public class OPartialSolution implements PartialSolution {
             if(orderingContains(node) || !orderingSatisfiesDependenciesFor(node, processorNumber)) {
                 continue;
             }
-            output.add(new OPartialSolution(context, allocation, this, node, depth + 1, processorNumber));
+            output.add(new OPartialSolution(context, allocation, this, node, depth + 1,
+                    processorNumber, allocation.getTopLevelFor(node) + allocation.getBottomLevelFor(node) - node.getWeight()));
         }
 
         return output;

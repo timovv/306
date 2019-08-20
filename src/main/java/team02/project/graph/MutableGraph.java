@@ -7,7 +7,6 @@ import java.util.*;
 @Data
 public class MutableGraph implements Graph {
     private String id;
-    private List<MutableNode> startingNodes = new ArrayList<>();
     private List<MutableNode> nodes = new ArrayList<>();
     private Map<String, MutableNode> lookup = new HashMap<>();
 

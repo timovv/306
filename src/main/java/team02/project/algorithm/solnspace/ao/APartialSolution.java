@@ -18,14 +18,14 @@ import java.util.Set;
  */
 public class APartialSolution implements PartialSolution {
     private final SchedulingContext context;
-    private int processor;
-    private Node task;
-    private int depth; // also used to index next node to schedule
-    private APartialSolution parent;
+    private final int processor;
+    private final Node task;
+    private final int depth; // also used to index next node to schedule
+    private final APartialSolution parent;
 
-    private int[] loads;
-    private int topLevelAllocated;
-    private int criticalPathAllocated;
+    private final int[] loads;
+    private final int topLevelAllocated;
+    private final int criticalPathAllocated;
 
     /**
      * The number of processors that have already got at least 1 task.
