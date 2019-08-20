@@ -42,8 +42,10 @@ public class OPartialSolution implements PartialSolution {
 
     @Override
     public Set<PartialSolution> expand() {
-        if(isComplete()) {
-            return Collections.emptySet();
+        if(isOrderingComplete()) {
+            Set<PartialSolution> output = new HashSet<>();
+            output.add(new AOCompleteSolution(context, this));
+            return output;
         }
 
         Set<PartialSolution> output = expandProcessor(processor);
@@ -67,7 +69,7 @@ public class OPartialSolution implements PartialSolution {
         return output;
     }
 
-    private boolean isEmptyOrdering() {
+    public boolean isEmptyOrdering() {
         return parent == null;
     }
 
@@ -112,62 +114,23 @@ public class OPartialSolution implements PartialSolution {
 
     @Override
     public boolean isComplete() {
+        return false;
+    }
+
+    public boolean isOrderingComplete() {
         return depth == context.getTaskGraph().getNodes().size();
     }
 
     @Override
     public Schedule makeComplete() {
-        Map<Node, ScheduledTask> scheduleMap = new HashMap<>();
-        int[] lastFinishTimes = new int[context.getProcessorCount()];
-
-        List<LinkedList<OPartialSolution>> solutions = new ArrayList<>(context.getProcessorCount());
-        for(int i = 0; i < context.getProcessorCount(); ++i) {
-            solutions.add(new LinkedList<>());
-        }
-
-        OPartialSolution current = this;
-        while(!current.isEmptyOrdering()) {
-            solutions.get(current.processor).addFirst(current);
-            current = current.getParent();
-        }
-
-        boolean removedSomething = true;
-        while(removedSomething) {
-            removedSomething = false;
-
-            outer:
-            for(LinkedList<OPartialSolution> processorTasks : solutions) { // try to schedule 1 task from each processor
-                if(processorTasks.isEmpty()) {
-                    continue;
-                }
-
-                OPartialSolution solution = processorTasks.getFirst();
-
-                int startTime = lastFinishTimes[solution.processor];
-                for(Map.Entry<Node, Integer> edge : solution.getTask().getIncomingEdges().entrySet()) {
-                    ScheduledTask scheduled = scheduleMap.get(edge.getKey());
-                    if(scheduled == null) {
-                        continue outer; // can't schedule this node right now
-                    }
-
-                    startTime = Math.max(
-                            startTime,
-                            scheduled.getFinishTime() + (scheduled.getProcessorId() == solution.processor ? 0 : edge.getValue())
-                    );
-                }
-
-                ScheduledTask sc = new ScheduledTask(solution.processor, startTime, solution.task);
-                lastFinishTimes[solution.processor] = sc.getFinishTime();
-                scheduleMap.put(solution.task, sc);
-                removedSomething = true;
-                processorTasks.removeFirst(); // it's scheduled
-            }
-        }
-
-        return new Schedule(new HashSet<>(scheduleMap.values()));
+        throw new UnsupportedOperationException();
     }
 
     public Node getTask() {
         return task;
+    }
+
+    public int getProcessor() {
+        return processor;
     }
 }

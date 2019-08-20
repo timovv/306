@@ -58,7 +58,6 @@ public class APartialSolution implements PartialSolution {
     }
 
     private int getMaxLoad() {
-
         int max = 0;
         for(int i = 0; i < loads.length; ++i) {
             if(max < loads[i]) {
