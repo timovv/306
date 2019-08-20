@@ -3,26 +3,23 @@ package team02.project.algorithm.solnspace.ao;
 import team02.project.algorithm.SchedulingContext;
 import team02.project.graph.Node;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Allocation {
 
-    private final List<List<Node>> tasks;
+    private final List<Set<Node>> tasks;
     private final int estimatedCost;
 
-    private Allocation(List<List<Node>> tasks, int estimatedCost) {
+    private Allocation(List<Set<Node>> tasks, int estimatedCost) {
         this.tasks = tasks;
         this.estimatedCost = estimatedCost;
     }
 
     public static Allocation fromAPartialSolution(APartialSolution alloc) {
         SchedulingContext ctx = alloc.getContext();
-        List<List<Node>> tasks = new ArrayList<>(ctx.getProcessorCount());
+        List<Set<Node>> tasks = new ArrayList<>(ctx.getProcessorCount());
         for(int i = 0; i < ctx.getProcessorCount(); ++i) {
-            tasks.add(new ArrayList<>());
+            tasks.add(new HashSet<>());
         }
 
         APartialSolution current = alloc;
@@ -34,7 +31,7 @@ public class Allocation {
         return new Allocation(tasks, alloc.getEstimatedFinishTime());
     }
 
-    public List<Node> getTasksFor(int processor) {
+    public Set<Node> getTasksFor(int processor) {
         return tasks.get(processor);
     }
 
