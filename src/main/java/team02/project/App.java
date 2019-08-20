@@ -1,5 +1,6 @@
 package team02.project;
 
+import javafx.application.Application;
 import team02.project.algorithm.*;
 import team02.project.cli.CLIConfig;
 import team02.project.cli.CLIException;
@@ -10,6 +11,7 @@ import team02.project.graph.GraphBuilderImpl;
 import team02.project.io.GraphParseException;
 import team02.project.io.GraphReader;
 import team02.project.io.OutputSchedule;
+import team02.project.visualization.FXApp;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -39,12 +41,18 @@ public class App {
             System.out.println(OUTPUT_FILE_ALREADY_EXISTS_WARNING);
         }
 
-        // Input and output paths are found, time to create the graph!
-        Graph graph = createGraph(inputFile);
-        SchedulingContext ctx = new SchedulingContext(graph, config.numberOfScheduleProcessors());
-        Schedule maybeOptimal = calculateSchedule(config, graph, ctx);
-        writeOutput(outputFile, ctx, maybeOptimal);
-        System.out.println("Schedule output successfully");
+        //booting up visualization as necessary
+        if(config.isVisualize()){
+            Application.launch(FXApp.class);
+        } else {
+            // Input and output paths are found, time to create the graph!
+            Graph graph = createGraph(inputFile);
+            SchedulingContext ctx = new SchedulingContext(graph, config.numberOfScheduleProcessors());
+            Schedule maybeOptimal = calculateSchedule(config, graph, ctx);
+            writeOutput(outputFile, ctx, maybeOptimal);
+            System.out.println("Schedule output successfully");
+        }
+
     }
 
     private static CLIConfig getOptions(String[] args) {
