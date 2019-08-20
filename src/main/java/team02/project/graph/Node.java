@@ -17,6 +17,12 @@ public interface Node {
     int getWeight();
 
     /**
+     * Get a unique integer index of this Node, which is guaranteed to be constrained by 0 <= index < graph.getNodes().
+     * @return The index of this node.
+     */
+    int getIndex();
+
+    /**
      * Get the parent {@link Node nodes} and their associated weight
      * @return
      */

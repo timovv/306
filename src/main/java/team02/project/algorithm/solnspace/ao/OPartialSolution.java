@@ -17,40 +17,34 @@ public class OPartialSolution implements PartialSolution {
     private final int depth;
     private final int processor;
 
-    private final List<Set<Node>> ordered;
-    private final List<Set<Node>> readyToOrder;
+    private final long[] orderedBits;
+    private final long[] readyToOrderBits;
 
-    private OPartialSolution(SchedulingContext context, Allocation allocation, OPartialSolution parent, Node task, int depth, int processor, List<Set<Node>> ordered, List<Set<Node>> readyToOrder) {
+    private OPartialSolution(SchedulingContext context, Allocation allocation, OPartialSolution parent, Node task, int depth, int processor, long[] orderedBits, long[] readyToOrderBits) {
         this.context = context;
         this.allocation = allocation;
         this.parent = parent;
         this.task = task;
         this.depth = depth;
         this.processor = processor;
-        this.ordered = ordered;
-        this.readyToOrder = readyToOrder;
+        this.orderedBits = orderedBits;
+        this.readyToOrderBits = readyToOrderBits;
     }
 
     public static OPartialSolution makeEmpty(SchedulingContext ctx, Allocation allocation) {
-        List<Set<Node>> ordered = new ArrayList<>(ctx.getProcessorCount());
-        List<Set<Node>> readyToOrder = new ArrayList<>(ctx.getProcessorCount());
+        long[] orderedBits = new long[ctx.getProcessorCount()];
+        long[] readyToOrderBits = new long[ctx.getProcessorCount()];
 
         // add stuff to readyToOrder (kinda pricy oops)
         for(int i = 0; i < ctx.getProcessorCount(); ++i) {
-            Set<Node> processorOrdered = new HashSet<>();
-            Set<Node> processorReadyToOrder = new HashSet<>();
-
             for (Node node : allocation.getTasksFor(i)) {
-                if (isTaskReadyToOrder(node, processorOrdered, allocation.getTasksFor(i))) {
-                    processorReadyToOrder.add(node);
+                if (isTaskReadyToOrder(node, orderedBits[i], allocation.getTasksFor(i))) {
+                    readyToOrderBits[i] |= (1 << node.getIndex());
                 }
             }
-
-            ordered.add(processorOrdered);
-            readyToOrder.add(processorReadyToOrder);
         }
 
-        return new OPartialSolution(ctx, allocation, null, null, 0, 0, ordered, readyToOrder);
+        return new OPartialSolution(ctx, allocation, null, null, 0, 0, orderedBits, readyToOrderBits);
     }
 
     @Override
@@ -81,40 +75,39 @@ public class OPartialSolution implements PartialSolution {
 
     private Set<PartialSolution> expandProcessor(int processorNumber) {
         Set<PartialSolution> output = new HashSet<>();
-        for(Node node : readyToOrder.get(processorNumber)) {
-            List<Set<Node>> newOrdered = new ArrayList<>(ordered);
-            Set<Node> newProcessorOrdered = new HashSet<>(ordered.get(processorNumber));
-            newOrdered.set(processorNumber, newProcessorOrdered);
-            newProcessorOrdered.add(node);
+        for(Node node : allocation.getTasksFor(processorNumber)) {
+            if((readyToOrderBits[processorNumber] & (1 << node.getIndex())) == 0) {
+                continue;
+            }
 
-            List<Set<Node>> newReadyToOrder = new ArrayList<>(readyToOrder);
-            Set<Node> newProcessorReady = new HashSet<>(readyToOrder.get(processorNumber));
-            newReadyToOrder.set(processorNumber, newProcessorReady);
-            newProcessorReady.remove(node);
+            long[] newOrderedBits = Arrays.copyOf(orderedBits, orderedBits.length);
+            long[] newReadyBits = Arrays.copyOf(readyToOrderBits, readyToOrderBits.length);
+            newOrderedBits[processorNumber] |= 1 << node.getIndex();
+            newReadyBits[processorNumber] &= ~(1 << node.getIndex());
 
             for(Node maybeNowReady : node.getOutgoingEdges().keySet()) {
                 if(allocation.getTasksFor(processorNumber).contains(maybeNowReady)) {
-                    boolean isNowReady = isTaskReadyToOrder(maybeNowReady, newOrdered.get(processorNumber),
+                    boolean isNowReady = isTaskReadyToOrder(maybeNowReady, newOrderedBits[processorNumber],
                             allocation.getTasksFor(processorNumber));
 
                     if(isNowReady) {
-                        newProcessorReady.add(maybeNowReady);
+                        newReadyBits[processorNumber] |= 1 << maybeNowReady.getIndex();
                     }
                 }
             }
 
-            output.add(new OPartialSolution(context, allocation, this, node, depth + 1, processorNumber, newOrdered, newReadyToOrder));
+            output.add(new OPartialSolution(context, allocation, this, node, depth + 1, processorNumber, newOrderedBits, newReadyBits));
         }
 
         return output;
     }
 
-    private static boolean isTaskReadyToOrder(Node task, Set<Node> orderedTasks, Set<Node> allocatedTasks) {
+    private static boolean isTaskReadyToOrder(Node task, long orderedBits, Set<Node> allocatedTasks) {
         for(Node directDependency : task.getIncomingEdges().keySet()) {
             // if this dependency is on this processor and it hasn't been ordered yet then we can't
             // schedule it
             if(allocatedTasks.contains(directDependency)
-                && !orderedTasks.contains(directDependency)) {
+                && ((orderedBits & (1 << directDependency.getIndex())) == 0)) {
                 return false;
             }
         }
