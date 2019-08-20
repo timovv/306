@@ -130,7 +130,7 @@ public class APartialSolution implements PartialSolution {
                     getDepth() + 1,
                     processorsWithTasks,
                     newLoads,
-                    newTopLevelAllocated,
+                    newTopLevelAllocated + next.getWeight(),
                     Math.max(this.criticalPathAllocated, newTopLevelAllocated + next.getBottomLevel()))
             );
         }
@@ -140,6 +140,12 @@ public class APartialSolution implements PartialSolution {
             int[] newLoads = new int[getContext().getProcessorCount()];
             System.arraycopy(loads, 0, newLoads, 0, loads.length);
             newLoads[processorsWithTasks] += next.getWeight();
+
+            int newTopLevelAllocated = 0;
+            for (Map.Entry<Node, Integer> pred : next.getIncomingEdges().entrySet()) {
+                newTopLevelAllocated = Math.max(newTopLevelAllocated, tla.get(pred.getKey()) + pred.getValue());
+            }
+
             output.add(new APartialSolution(
                     this.getContext(),
                     this,
@@ -148,8 +154,8 @@ public class APartialSolution implements PartialSolution {
                     getDepth() + 1,
                     processorsWithTasks + 1,
                     newLoads,
-                    Math.max(this.topLevelAllocated, next.getTopLevel()),
-                    Math.max(this.criticalPathAllocated, next.getBottomLevel())));
+                    newTopLevelAllocated + next.getWeight(),
+                    Math.max(this.criticalPathAllocated, newTopLevelAllocated + next.getBottomLevel())));
         }
 
         return output;

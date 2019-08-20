@@ -10,8 +10,8 @@ public class Runner {
         System.out.println("Starting...");
 
         var loader = new TestGraphLoader(
-                (nodes, procs) -> nodes == 10  && procs == 4,
-                5);
+                (nodes, procs) -> nodes == 10 && procs == 4,
+                20);
 
         var benchmark = new AlgorithmBenchmark(NaiveBranchBoundAlgorithm::new);
 
