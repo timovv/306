@@ -1,7 +1,6 @@
 package team02.project.algorithm;
 
 import lombok.val;
-import lombok.var;
 import team02.project.algorithm.solnspace.PartialSolution;
 import team02.project.algorithm.solnspace.SolutionSpace;
 import team02.project.algorithm.solnspace.ao.AOSolutionSpace;
@@ -13,7 +12,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class ParallelBranchAndBound implements SchedulingAlgorithm {
 
-    private AtomicInteger ubound = new AtomicInteger(Integer.MAX_VALUE);
+    private static final int SYNC_COUNT = 100000;
+    private int ubound = Integer.MAX_VALUE;
     private SolutionSpace solutionSpace = new AOSolutionSpace();
     private static final int SEARCH_THRESHOLD = 10;
     private PartialSolution best = null;
@@ -32,6 +32,8 @@ public class ParallelBranchAndBound implements SchedulingAlgorithm {
 
     private class ForkSearch extends RecursiveAction {
         LinkedList<PartialSolution> scheduleStack;
+        private int localBound = ubound;
+        private int syncCounter = 0;
 
         private ForkSearch(LinkedList<PartialSolution> scheduleStack) {
             this.scheduleStack = scheduleStack;
@@ -43,7 +45,8 @@ public class ParallelBranchAndBound implements SchedulingAlgorithm {
                 val schedule = scheduleStack.pop();
                 if (schedule.isComplete()) { // don't expand
                     int estimate = schedule.getEstimatedFinishTime();
-                    if (estimate < ubound.get()) { // update the upper bound
+                    if (estimate < localBound) { // update the upper bound
+                        localBound = estimate;
                         updateBest(schedule);
                     }
                     continue;
@@ -51,7 +54,7 @@ public class ParallelBranchAndBound implements SchedulingAlgorithm {
 
                 val children = schedule.expand(); // branch
                 for (val child : children) {
-                    if (child.getEstimatedFinishTime() < ubound.get()) { // bound
+                    if (child.getEstimatedFinishTime() < localBound) { // bound
                         scheduleStack.push(child);
                     }
                 }
@@ -62,14 +65,20 @@ public class ParallelBranchAndBound implements SchedulingAlgorithm {
                     takeThis.add(scheduleStack.removeLast());
                     invokeAll(new ForkSearch(scheduleStack), new ForkSearch(takeThis));
                 }
+
+                syncCounter++;
+                if(syncCounter > SYNC_COUNT) {
+                    syncCounter = 0;
+                    localBound = ubound;
+                }
             }
         }
 
         private synchronized void updateBest(PartialSolution p) {
             // check best again in case of multiple threads
             val estimate = p.getEstimatedFinishTime();
-            if(estimate < ubound.get()) {
-                ubound.getAndSet(estimate);
+            if(estimate < ubound) {
+                ubound = estimate;
                 best = p;
             }
         }
