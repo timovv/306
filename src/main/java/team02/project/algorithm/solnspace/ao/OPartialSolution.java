@@ -41,14 +41,12 @@ public class OPartialSolution implements PartialSolution {
     }
 
     @Override
-    public Set<PartialSolution> expand() {
+    public Collection<PartialSolution> expand() {
         if(isOrderingComplete()) {
-            Set<PartialSolution> output = new HashSet<>();
-            output.add(new AOCompleteSolution(context, this));
-            return output;
+            return Collections.singletonList(new AOCompleteSolution(context, this));
         }
 
-        Set<PartialSolution> output = expandProcessor(processor);
+        PriorityQueue<PartialSolution> output = expandProcessor(processor);
 
         if(output.isEmpty()) {
             output = expandProcessor(processor + 1);
@@ -57,8 +55,8 @@ public class OPartialSolution implements PartialSolution {
         return output;
     }
 
-    private Set<PartialSolution> expandProcessor(int processorNumber) {
-        Set<PartialSolution> output = new HashSet<>();
+    private PriorityQueue<PartialSolution> expandProcessor(int processorNumber) {
+        PriorityQueue<PartialSolution> output = new PriorityQueue<>();
         for(Node node : allocation.getTasksFor(processorNumber)) {
             if(orderingContains(node) || !orderingSatisfiesDependenciesFor(node, processorNumber)) {
                 continue;

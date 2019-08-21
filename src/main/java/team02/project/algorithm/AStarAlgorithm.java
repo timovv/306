@@ -14,12 +14,8 @@ public class AStarAlgorithm implements SchedulingAlgorithm {
     @Override
     public Schedule calculateOptimal(SchedulingContext ctx) {
 
-        PriorityQueue<PartialSolution> scheduleQueue = new PriorityQueue<>(INITIAL_SIZE, new Comparator<PartialSolution>() {
-            @Override
-            public int compare(PartialSolution p1, PartialSolution p2) {
-                return Integer.compare(p1.getEstimatedFinishTime(), p2.getEstimatedFinishTime());
-            }
-        });
+        PriorityQueue<PartialSolution> scheduleQueue = new PriorityQueue<>(INITIAL_SIZE,
+                Comparator.comparingInt(PartialSolution::getEstimatedFinishTime));
         SolutionSpace solutionSpace = new AOSolutionSpace();
         scheduleQueue.add(solutionSpace.getRoot(ctx));
 

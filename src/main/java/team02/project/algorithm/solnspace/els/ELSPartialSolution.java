@@ -8,9 +8,7 @@ import team02.project.algorithm.SchedulingContext;
 import team02.project.algorithm.solnspace.PartialSolution;
 import team02.project.graph.Node;
 
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
 
 public class ELSPartialSolution implements PartialSolution, Iterable<ScheduledTask> {
     private final SchedulingContext context;
@@ -44,8 +42,9 @@ public class ELSPartialSolution implements PartialSolution, Iterable<ScheduledTa
     }
 
     @Override
-    public Set<PartialSolution> expand() {
-        Set<PartialSolution> output = new HashSet<>();
+    public PriorityQueue<PartialSolution> expand() {
+        PriorityQueue<PartialSolution> output = new PriorityQueue<>(
+                Comparator.comparingInt(PartialSolution::getEstimatedFinishTime));
 
         Set<Node> nodesAlreadyInSchedule = new HashSet<>();
         for(val node : this) {

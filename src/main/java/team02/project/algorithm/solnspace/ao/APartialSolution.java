@@ -1,12 +1,12 @@
 package team02.project.algorithm.solnspace.ao;
 
+import javafx.scene.layout.Priority;
 import team02.project.algorithm.Schedule;
 import team02.project.algorithm.SchedulingContext;
 import team02.project.algorithm.solnspace.PartialSolution;
 import team02.project.graph.Node;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Allocation
@@ -69,14 +69,12 @@ public class APartialSolution implements PartialSolution {
     }
 
     @Override
-    public Set<PartialSolution> expand() {
+    public Collection<PartialSolution> expand() {
         if (isCompleteAllocation()) {
-            Set<PartialSolution> output = new HashSet<>();
-            output.add(OPartialSolution.makeEmpty(context, Allocation.fromAPartialSolution(this)));
-            return output;
+            return Collections.singletonList(OPartialSolution.makeEmpty(context, Allocation.fromAPartialSolution(this)));
         }
 
-        Set<PartialSolution> output = new HashSet<>();
+        PriorityQueue<PartialSolution> output = new PriorityQueue<>();
 
         // get the next one from nodesToSchedule
         Node next = getContext().getTaskGraph().getNodes().get(getDepth());

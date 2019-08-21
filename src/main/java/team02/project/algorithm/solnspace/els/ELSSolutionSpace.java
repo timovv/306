@@ -9,6 +9,4 @@ public class ELSSolutionSpace implements SolutionSpace {
     public PartialSolution getRoot(SchedulingContext ctx) {
         return ELSPartialSolution.makeEmpty(ctx);
     }
-
-
 }
