@@ -15,8 +15,9 @@ public class Runner {
         System.out.println("Starting...");
 
         var loader = new TestGraphLoader(
-                (nodes, procs) -> nodes == 10 && procs == 4,
-                5);
+                (nodes, procs) -> nodes == 10 && procs == 2,
+                5,
+                "2p_InTree-Balanced-MaxBf-3_Nodes_10_CCR_0.10_WeightType_Random,2p_Fork_Join_Nodes_10_CCR_1.84_WeightType_Random");
 
         var benchmark = new AlgorithmBenchmark(() -> new ParallelBranchAndBound(new AOSolutionSpace()));
 
