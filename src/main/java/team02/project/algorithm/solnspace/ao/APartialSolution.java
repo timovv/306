@@ -74,7 +74,7 @@ public class APartialSolution implements PartialSolution {
             return Collections.singletonList(OPartialSolution.makeEmpty(context, Allocation.fromAPartialSolution(this)));
         }
 
-        PriorityQueue<PartialSolution> output = new PriorityQueue<>();
+        PriorityQueue<PartialSolution> output = new PriorityQueue<>(processorsWithTasks + 1);
 
         // get the next one from nodesToSchedule
         Node next = getContext().getTaskGraph().getNodes().get(getDepth());
