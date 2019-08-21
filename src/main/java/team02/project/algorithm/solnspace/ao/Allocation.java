@@ -10,13 +10,17 @@ import java.util.stream.Collectors;
 public class Allocation {
 
     private final List<Set<Node>> tasks;
-    private Map<Node, Integer> topLevelAllocated;
-    private Map<Node, Integer> bottomLevelAllocated;
+    private final int[] loadsPerProcessor;
+    private final Map<Node, Integer> processors;
+    private final Map<Node, Integer> topLevelAllocated;
+    private final Map<Node, Integer> bottomLevelAllocated;
     private final int estimatedCost;
 
-    private Allocation(List<Set<Node>> tasks, Map<Node, Integer> topLevelAllocated,
-                       Map<Node, Integer> bottomLevelAllocated, int estimatedCost) {
+    private Allocation(List<Set<Node>> tasks, int[] loadsPerProcessor,  Map<Node, Integer> processors,
+                       Map<Node, Integer> topLevelAllocated, Map<Node, Integer> bottomLevelAllocated, int estimatedCost) {
         this.tasks = tasks;
+        this.loadsPerProcessor = loadsPerProcessor;
+        this.processors = processors;
         this.topLevelAllocated = topLevelAllocated;
         this.bottomLevelAllocated = bottomLevelAllocated;
         this.estimatedCost = estimatedCost;
@@ -25,6 +29,7 @@ public class Allocation {
     public static Allocation fromAPartialSolution(APartialSolution alloc) {
         SchedulingContext ctx = alloc.getContext();
         List<Set<Node>> tasks = new ArrayList<>(ctx.getProcessorCount());
+        int[] loadsPerProcessor = new int[ctx.getProcessorCount()];
         for(int i = 0; i < ctx.getProcessorCount(); ++i) {
             tasks.add(new HashSet<>());
         }
@@ -35,6 +40,7 @@ public class Allocation {
         APartialSolution current = alloc;
         while(!current.isEmpty()) {
             tasks.get(current.getProcessor()).add(current.getTask());
+            loadsPerProcessor[current.getProcessor()] += current.getTask().getWeight();
             topLevelAllocated.put(current.getTask(), current.getTopLevelAllocated());
             processorLookup.put(current.getTask(), current.getProcessor());
             current = current.getParent();
@@ -47,6 +53,7 @@ public class Allocation {
         Map<Node, Integer> bottomLevelAllocated = new HashMap<>();
         while(!queue.isEmpty()){
             Node node = queue.poll();
+
             int bottomLevel = node.getOutgoingEdges().entrySet()
                     .stream()
                     .mapToInt(childEntry -> {
@@ -65,7 +72,8 @@ public class Allocation {
                 queue.offer(node2);
             }
         }
-        return new Allocation(tasks, topLevelAllocated, bottomLevelAllocated, alloc.getEstimatedFinishTime());
+        return new Allocation(tasks, loadsPerProcessor,  processorLookup, topLevelAllocated,
+                bottomLevelAllocated, alloc.getEstimatedFinishTime());
     }
 
     public Set<Node> getTasksFor(int processor) {
@@ -79,6 +87,15 @@ public class Allocation {
     public int getBottomLevelFor(Node task) {
         return bottomLevelAllocated.get(task);
     }
+
+    public int getProcessorFor(Node task) {
+        return processors.get(task);
+    }
+
+    public int getLoadFor(int processor) {
+        return loadsPerProcessor[processor];
+    }
+
 
     public Map<Node, Integer> createProcessorLookupTable() {
         Map<Node, Integer> output = new HashMap<>();

@@ -5,12 +5,9 @@ import team02.project.algorithm.SchedulingContext;
 import team02.project.algorithm.solnspace.PartialSolution;
 import team02.project.graph.Node;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.Map;
-import java.util.Queue;
 import java.util.Set;
 
 /**
@@ -33,28 +30,13 @@ public class APartialSolution implements PartialSolution {
     private int processorsWithTasks;
 
     public static APartialSolution makeEmpty(SchedulingContext context) {
-        return new APartialSolution(context,
-                null,
-                null,
-                0,
-                0,
-                0,
-                new int[context.getProcessorCount()],
-                0,
-                0
-        );
+        return new APartialSolution(context, null, null, 0, 0, 0,
+                new int[context.getProcessorCount()], 0, 0 );
     }
 
-    private APartialSolution(SchedulingContext context,
-                             APartialSolution parent,
-                             Node task,
-                             int processor,
-                             int depth,
-                             int processorsWithTasks,
-                             int[] loads,
-                             int topLevelAllocated,
-                             int criticalPathAllocated) {
-
+    private APartialSolution(SchedulingContext context, APartialSolution parent, Node task,
+                             int processor, int depth, int processorsWithTasks, int[] loads,
+                             int topLevelAllocated, int criticalPathAllocated) {
         this.context = context;
         this.parent = parent;
         this.processor = processor;
