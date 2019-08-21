@@ -3,8 +3,11 @@ package team02.project.benchmark;
 import lombok.Value;
 import lombok.var;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
@@ -68,6 +71,42 @@ public class TestGraphLoader implements Iterable<TestGraphLoader.TestGraph> {
 
     public TestGraphLoader(BiFunction<Integer, Integer, Boolean> selectionPred, int size) {
         this(selectionPred, size, "");
+    }
+
+    /**
+     * Loads a selection of graphs from a text file of graph names on each line.
+     * @param path The path of the text file to load.
+     */
+    public TestGraphLoader(String path) {
+        // TODO: Change it so that it takes in csv of graphs with properties, not a list of graph names
+        try {
+            Scanner scannerForFile = new Scanner(getClass().getResourceAsStream(path));
+            while (scannerForFile.hasNext()) {
+                // run test for this graph
+                String graphToTry = scannerForFile.next();
+                Scanner scanner = new Scanner(Paths.get(GRAPH_FILE));
+                while (scanner.hasNextLine()) {
+                    String[] parts = scanner.nextLine().split(DELIMITER);
+                    var name = parts[0];
+                    int numNodes = Integer.parseInt(parts[1]);
+                    int numProcessors = Integer.parseInt(parts[2]);
+                    int optimal = Integer.parseInt(parts[3]);
+                    if (graphToTry.matches(name)) {
+                        var tg = new TestGraph(
+                                Paths.get(PREFIX + name + EXTENSION), name,
+                                numNodes, numProcessors, optimal);
+                        testGraphs.put(name, tg);
+                        break;
+                    }
+                }
+                scanner.close();
+            }
+            scannerForFile.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**

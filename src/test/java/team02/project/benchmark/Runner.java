@@ -7,6 +7,7 @@ import team02.project.algorithm.SchedulingAlgorithm;
 import team02.project.algorithm.solnspace.ao.AOSolutionSpace;
 import team02.project.benchmark.AlgorithmBenchmark.Result;
 
+import java.nio.file.Paths;
 import java.util.function.Supplier;
 
 public class Runner {
@@ -14,18 +15,19 @@ public class Runner {
 
         System.out.println("Starting...");
 
-        var loader = new TestGraphLoader(
-                (nodes, procs) -> nodes == 10 && procs == 2,
-                5,
-                "2p_InTree-Balanced-MaxBf-3_Nodes_10_CCR_0.10_WeightType_Random,2p_Fork_Join_Nodes_10_CCR_1.84_WeightType_Random");
+        // test
+        var loader = new TestGraphLoader("/testPackages/10nodes.txt");
 
         var benchmark = new AlgorithmBenchmark(() -> new ParallelBranchAndBound(new AOSolutionSpace()));
 
+        int total = 0;
         for (var testGraph : loader) {
             Result result = benchmark.run(testGraph.getFile(), testGraph.getNumProcessors());
+            total += result.getTimeTaken();
             System.out.print(testGraph.getName());
             print(testGraph.getOptimal(), result.getScheduleLength(), result.getTimeTaken());
         }
+        System.out.println("Total time: " + total + "ms");
     }
 
     private static void print(int expectedLength, int actualLength, long timeTaken) {
