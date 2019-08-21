@@ -11,12 +11,16 @@ import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class ParallelBranchAndBound implements SchedulingAlgorithm {
-
     private static final int SYNC_COUNT = 100000;
-    private int ubound = Integer.MAX_VALUE;
-    private SolutionSpace solutionSpace = new AOSolutionSpace();
     private static final int SEARCH_THRESHOLD = 10;
+
+    private int ubound = Integer.MAX_VALUE;
     private PartialSolution best = null;
+    private SolutionSpace solutionSpace;
+
+    public ParallelBranchAndBound(SolutionSpace solutionSpace) {
+        this.solutionSpace = solutionSpace;
+    }
 
 
     @Override
