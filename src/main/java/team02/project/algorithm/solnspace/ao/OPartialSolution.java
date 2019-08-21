@@ -89,7 +89,7 @@ public class OPartialSolution implements PartialSolution {
         Map<Node, Integer> historicEstimatedStartTimes = new HashMap<>();
 
         // The sum of weights already ordered on each processor
-        int[] totalOrderedPerProcessor = new int[context.getProcessorCount()];
+        int[] totalOrdered = new int[context.getProcessorCount()];
 
         // Latest finish time for each processor
         int[] latestFinishTime = new int[context.getProcessorCount()];
@@ -97,7 +97,7 @@ public class OPartialSolution implements PartialSolution {
         OPartialSolution prev = this;
         while (!prev.isEmpty()) {
             historicEstimatedStartTimes.put(prev.getTask(), prev.getEstimatedStartTime());
-            totalOrderedPerProcessor[prev.getProcessor()] += prev.getTask().getWeight();
+            totalOrdered[prev.getProcessor()] += prev.getTask().getWeight();
             latestFinishTime[prev.getProcessor()] = Math.max(latestFinishTime[prev.getProcessor()],
                     prev.getEstimatedStartTime() + prev.getTask().getWeight());
             prev = prev.getParent();
@@ -124,29 +124,28 @@ public class OPartialSolution implements PartialSolution {
                 }
             }
 
-            int newEstStartTime = allocation.getTopLevelFor(node);
+            int newDataReadyTime = 0;
             for (Map.Entry<Node, Integer> pred : node.getIncomingEdges().entrySet()) {
                 int predFinishTime;
                 if (historicEstimatedStartTimes.containsKey(pred.getKey())) {
-                    predFinishTime = Math.max(newEstStartTime, historicEstimatedStartTimes.get(pred.getKey())
-                            + pred.getKey().getWeight());
+                    predFinishTime = historicEstimatedStartTimes.get(pred.getKey()) + pred.getKey().getWeight();
                 } else {
-                    predFinishTime = Math.max(newEstStartTime, allocation.getTopLevelFor(pred.getKey()));
+                    predFinishTime = allocation.getTopLevelFor(pred.getKey());
                 }
                 if (allocation.getProcessorFor(pred.getKey()) != processorNumber) {
                     predFinishTime += pred.getValue();
                 }
-                newEstStartTime = Math.max(newEstStartTime, predFinishTime);
+                newDataReadyTime = Math.max(newDataReadyTime, predFinishTime);
             }
 
-            int mostFuckedProcessor = 0;
+            int maxOrderedLoad = 0;
             for (int i = 0; i < context.getProcessorCount(); i++) {
-                mostFuckedProcessor = Math.max(mostFuckedProcessor,
-                        latestFinishTime[i] + (allocation.getLoadFor(i) - totalOrderedPerProcessor[i]));
+                maxOrderedLoad = Math.max(maxOrderedLoad,
+                        latestFinishTime[i] + (allocation.getLoadFor(i) - totalOrdered[i]));
             }
 
 
-            int fucked = Math.max(latestFinishTime[processorNumber], newEstStartTime);
+            int newEstStartTime = Math.max(latestFinishTime[processorNumber], newDataReadyTime);
 
             output.add(new OPartialSolution(
                 context,
@@ -157,8 +156,8 @@ public class OPartialSolution implements PartialSolution {
                 processorNumber,
                 newOrderedBits,
                 newReadyBits,
-                fucked,
-                Math.max(this.heuristicCost, Math.max(fucked + allocation.getBottomLevelFor(node), mostFuckedProcessor))
+                newEstStartTime,
+                Math.max(this.heuristicCost, Math.max(newEstStartTime + allocation.getBottomLevelFor(node), maxOrderedLoad))
             ));
         }
 
