@@ -12,13 +12,18 @@ import java.util.LinkedList;
  * Bounds any complete schedules which exceed the current upper bound
  */
 public class NaiveBranchBoundAlgorithm implements SchedulingAlgorithm {
+    private SolutionSpace solutionSpace;
+
+    public NaiveBranchBoundAlgorithm(SolutionSpace solutionSpace) {
+        this.solutionSpace = solutionSpace;
+    }
+
     @Override
     public Schedule calculateOptimal(SchedulingContext ctx) {
         int ubound = Integer.MAX_VALUE; // cache the upper bound
         PartialSolution best = null;
 
         LinkedList<PartialSolution> scheduleStack = new LinkedList<>();
-        SolutionSpace solutionSpace = new AOSolutionSpace();
         scheduleStack.add(solutionSpace.getRoot(ctx));
         while(!scheduleStack.isEmpty()) {
             val schedule = scheduleStack.pop();
