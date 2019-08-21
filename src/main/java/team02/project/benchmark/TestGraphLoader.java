@@ -7,10 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Scanner;
+import java.util.*;
 import java.util.function.BiFunction;
 
 public class TestGraphLoader implements Iterable<TestGraphLoader.TestGraph> {
@@ -37,8 +34,10 @@ public class TestGraphLoader implements Iterable<TestGraphLoader.TestGraph> {
      * @param selectionPred Given number of nodes and number of processors in input graph, return true
      *                      if the current graph should be added to selection
      * @param size Number of graphs to load and benchmark
+     * @param matchList The graph file name should match any string in this commas seperated list
+     *                  e.g. "Fork_Join,Random,OutTree"
      */
-    public TestGraphLoader(BiFunction<Integer, Integer, Boolean> selectionPred, int size) {
+    public TestGraphLoader(BiFunction<Integer, Integer, Boolean> selectionPred, int size, String matchList) {
         try {
             var scanner = new Scanner(Paths.get(GRAPH_FILE));
             int count = 0;
@@ -48,8 +47,9 @@ public class TestGraphLoader implements Iterable<TestGraphLoader.TestGraph> {
                 int numNodes = Integer.parseInt(parts[1]);
                 int numProcessors = Integer.parseInt(parts[2]);
                 int optimal = Integer.parseInt(parts[3]);
-
-                if (!selectionPred.apply(numNodes, numProcessors)) {
+                String[] match = matchList.split(",");
+                if (!selectionPred.apply(numNodes, numProcessors)
+                        || !Arrays.stream(match).parallel().anyMatch(name::contains)) {
                     continue;
                 }
                 var tg = new TestGraph(
@@ -64,6 +64,10 @@ public class TestGraphLoader implements Iterable<TestGraphLoader.TestGraph> {
         } catch (IOException ex) {
             ex.printStackTrace();
         }
+    }
+
+    public TestGraphLoader(BiFunction<Integer, Integer, Boolean> selectionPred, int size) {
+        this(selectionPred, size, "");
     }
 
     /**
