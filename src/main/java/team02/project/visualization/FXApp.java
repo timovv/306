@@ -5,6 +5,11 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import team02.project.App;
+import team02.project.algorithm.Schedule;
+import team02.project.algorithm.SchedulingContext;
+import team02.project.cli.CLIConfig;
+import team02.project.graph.Graph;
 
 import java.io.IOException;
 
@@ -24,6 +29,9 @@ public class FXApp extends Application {
             loader.setController(mainController);
             Parent root = loader.load();
 
+            //TODO
+            mainController.initManagers();
+
             primaryStage.setTitle("Team-02");
 
             // initializing scene
@@ -42,4 +50,5 @@ public class FXApp extends Application {
             e.printStackTrace();
         }
     }
+
 }

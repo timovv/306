@@ -25,8 +25,10 @@ public class App {
 
     private static int EXIT_FAILURE = 1;
 
+    public static volatile CLIConfig config;
+
     public static void main(String[] args)  {
-        CLIConfig config = getOptions(args);
+        config = getOptions(args);
 
         // TODO: would probably be better if the input file validation was with the CLI stuff but it's a bit tricky
         Path inputFile = Paths.get(config.inputDOTFile());
