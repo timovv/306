@@ -14,10 +14,12 @@ public class MutableNode implements Node {
     Map<Node, Integer> incomingEdges = new HashMap<>();
     Map<Node, Integer> outgoingEdges = new HashMap<>();
     Set<Node> dependencies = new HashSet<>();
+    int index;
 
-    public MutableNode(String id, int weight) {
+    public MutableNode(String id, int weight, int index) {
         this.id = id;
         this.weight = weight;
+        this.index = index;
     }
 
     @Override

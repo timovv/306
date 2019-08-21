@@ -11,6 +11,8 @@ public class GraphBuilderImpl implements GraphBuilder {
     private MutableGraph wip = new MutableGraph();
     private boolean built = false;
 
+    private int currentIndex = 0;
+
     @Override
     public Graph build() {
         built = true;
@@ -18,20 +20,6 @@ public class GraphBuilderImpl implements GraphBuilder {
         // set up the dependencies
         // TODO: as we add more preprocessing steps it would be nice to move them outside of GraphBuilder.
         setupDependencies();
-
-        // create a topological order, if this is too slow then we can do it using the normal algorithm
-        wip.getNodes().sort((a, b) -> {
-            if (a.getDependencies().contains(b)) {
-                // a depends on b => (a > b)
-                return -1;
-            } else if (b.getDependencies().contains(a)) {
-                // b depends on a => (b > a)
-                return 1;
-            } else {
-                return 0;
-            }
-        });
-
         return wip;
     }
 
@@ -68,7 +56,7 @@ public class GraphBuilderImpl implements GraphBuilder {
     @Override
     public void addNode(String id, int weight) {
         throwIfBuilt();
-        wip.addNode(new MutableNode(id, weight));
+        wip.addNode(new MutableNode(id, weight, currentIndex++));
     }
 
     @Override
