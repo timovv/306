@@ -15,11 +15,11 @@ import java.util.function.Supplier;
  */
 public class AlgorithmBenchmark {
 
-    private SchedulingAlgorithm algorithm;
+    private Supplier<SchedulingAlgorithm> supplier;
 
 
     public AlgorithmBenchmark(Supplier<SchedulingAlgorithm> algorithmSupplier) {
-        this.algorithm = algorithmSupplier.get();
+        this.supplier = algorithmSupplier;
     }
 
     /**
@@ -29,6 +29,7 @@ public class AlgorithmBenchmark {
      * @return The {@link Result} containing time taken (ms) and the computed schedule length
      */
     public Result run(Path testGraph, int processorCount) {
+        SchedulingAlgorithm algorithm = supplier.get();
         var graphBuilder = new GraphBuilderImpl();
         GraphReader.readInto(testGraph, graphBuilder);
         var context = new SchedulingContext(graphBuilder.build(), processorCount);

@@ -2,6 +2,7 @@ package team02.project.benchmark;
 
 import lombok.var;
 import team02.project.algorithm.NaiveBranchBoundAlgorithm;
+import team02.project.algorithm.ParallelBranchAndBound;
 import team02.project.benchmark.AlgorithmBenchmark.Result;
 
 public class Runner {
@@ -10,10 +11,10 @@ public class Runner {
         System.out.println("Starting...");
 
         var loader = new TestGraphLoader(
-                (nodes, procs) -> nodes <= 7 && procs == 4,
-                1);
+                (nodes, procs) -> nodes == 10 && procs == 4,
+                5);
 
-        var benchmark = new AlgorithmBenchmark(NaiveBranchBoundAlgorithm::new);
+        var benchmark = new AlgorithmBenchmark(ParallelBranchAndBound::new);
 
         for (var testGraph : loader) {
             Result result = benchmark.run(testGraph.getFile(), testGraph.getNumProcessors());
