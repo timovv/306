@@ -5,7 +5,12 @@ import team02.project.algorithm.SchedulingContext;
 import team02.project.algorithm.solnspace.PartialSolution;
 import team02.project.graph.Node;
 
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 
 /**
@@ -13,12 +18,14 @@ import java.util.Set;
  */
 public class APartialSolution implements PartialSolution {
     private final SchedulingContext context;
-    private int processor;
-    private Node task;
-    private int depth; // also used to index next node to schedule
-    private APartialSolution parent;
+    private final int processor;
+    private final Node task;
+    private final int depth; // also used to index next node to schedule
+    private final APartialSolution parent;
 
-    private int[] loads;
+    private final int[] loads;
+    private final int topLevelAllocated;
+    private final int criticalPathAllocated;
 
     /**
      * The number of processors that have already got at least 1 task.
@@ -32,7 +39,9 @@ public class APartialSolution implements PartialSolution {
                 0,
                 0,
                 0,
-                new int[context.getProcessorCount()]
+                new int[context.getProcessorCount()],
+                0,
+                0
         );
     }
 
@@ -42,7 +51,10 @@ public class APartialSolution implements PartialSolution {
                              int processor,
                              int depth,
                              int processorsWithTasks,
-                             int[] loads) {
+                             int[] loads,
+                             int topLevelAllocated,
+                             int criticalPathAllocated) {
+
         this.context = context;
         this.parent = parent;
         this.processor = processor;
@@ -50,11 +62,13 @@ public class APartialSolution implements PartialSolution {
         this.depth = depth;
         this.processorsWithTasks = processorsWithTasks;
         this.loads = loads;
+        this.topLevelAllocated = topLevelAllocated;
+        this.criticalPathAllocated = criticalPathAllocated;
     }
 
     @Override
     public int getEstimatedFinishTime() {
-        return getMaxLoad();
+        return Math.max(getMaxLoad(), criticalPathAllocated);
     }
 
     private int getMaxLoad() {
@@ -64,7 +78,6 @@ public class APartialSolution implements PartialSolution {
                 max = loads[i];
             }
         }
-
         return max;
     }
 
@@ -81,11 +94,33 @@ public class APartialSolution implements PartialSolution {
         // get the next one from nodesToSchedule
         Node next = getContext().getTaskGraph().getNodes().get(getDepth());
 
+        // Full mapping of Nodes -> Processors
+        Map<Node, Integer> processorLookupTable = new HashMap<>();
+
+        // Contains the TLA values of all allocated Nodes
+        Map<Node, Integer> tla = new HashMap<>();
+
+        APartialSolution current = this;
+        while (!current.isEmpty()) {
+            processorLookupTable.put(current.getTask(), current.getProcessor());
+            tla.put(current.getTask(), current.getTopLevelAllocated());
+            current = current.getParent();
+        }
+
         // add to processors with tasks
         for (int i = 0; i < processorsWithTasks; i++) {
             int[] newLoads = new int[getContext().getProcessorCount()];
             System.arraycopy(loads, 0, newLoads, 0, loads.length);
             newLoads[i] += next.getWeight();
+
+            int newTopLevelAllocated = 0;
+            for (Map.Entry<Node, Integer> pred : next.getIncomingEdges().entrySet()) {
+                if (!processorLookupTable.getOrDefault(pred.getKey(), i).equals(i)) {
+                    newTopLevelAllocated = Math.max(newTopLevelAllocated, tla.get(pred.getKey()) + pred.getValue());
+                } else {
+                    newTopLevelAllocated =  Math.max(newTopLevelAllocated, pred.getKey().getTopLevel());
+                }
+            }
 
             output.add(new APartialSolution(
                     this.getContext(),
@@ -94,7 +129,9 @@ public class APartialSolution implements PartialSolution {
                     i,
                     getDepth() + 1,
                     processorsWithTasks,
-                    newLoads)
+                    newLoads,
+                    newTopLevelAllocated + next.getWeight(),
+                    Math.max(this.criticalPathAllocated, newTopLevelAllocated + next.getBottomLevel()))
             );
         }
 
@@ -103,8 +140,22 @@ public class APartialSolution implements PartialSolution {
             int[] newLoads = new int[getContext().getProcessorCount()];
             System.arraycopy(loads, 0, newLoads, 0, loads.length);
             newLoads[processorsWithTasks] += next.getWeight();
-            output.add(new APartialSolution(getContext(), this, next, processorsWithTasks, getDepth() + 1,
-                    processorsWithTasks + 1, newLoads));
+
+            int newTopLevelAllocated = 0;
+            for (Map.Entry<Node, Integer> pred : next.getIncomingEdges().entrySet()) {
+                newTopLevelAllocated = Math.max(newTopLevelAllocated, tla.get(pred.getKey()) + pred.getValue());
+            }
+
+            output.add(new APartialSolution(
+                    this.getContext(),
+                    this,
+                    next,
+                    processorsWithTasks,
+                    getDepth() + 1,
+                    processorsWithTasks + 1,
+                    newLoads,
+                    newTopLevelAllocated + next.getWeight(),
+                    Math.max(this.criticalPathAllocated, newTopLevelAllocated + next.getBottomLevel())));
         }
 
         return output;
@@ -112,7 +163,7 @@ public class APartialSolution implements PartialSolution {
 
     public int getProcessorFor(Node task) {
         APartialSolution current = this;
-        while (!isEmpty()) {
+        while (!current.isEmpty()) {
             if (current.getTask().equals(task)) {
                 return current.getProcessor();
             }
@@ -121,6 +172,7 @@ public class APartialSolution implements PartialSolution {
 
         return -1;
     }
+
 
     public boolean isEmpty() {
         return getParent() == null;
@@ -159,4 +211,13 @@ public class APartialSolution implements PartialSolution {
     public APartialSolution getParent() {
         return parent;
     }
+
+    public int getTopLevelAllocated() {
+        return topLevelAllocated;
+    }
+
+    public int getCriticalPathAllocated() {
+        return criticalPathAllocated;
+    }
+
 }
