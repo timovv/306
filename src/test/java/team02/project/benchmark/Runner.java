@@ -1,7 +1,6 @@
 package team02.project.benchmark;
 
 import lombok.var;
-import team02.project.algorithm.AStarAlgorithm;
 import team02.project.algorithm.NaiveBranchBoundAlgorithm;
 import team02.project.algorithm.ParallelBranchAndBound;
 import team02.project.algorithm.SchedulingAlgorithm;
@@ -16,8 +15,7 @@ public class Runner {
 
         System.out.println("Starting...");
 
-        // load in a text file from testPackages folder
-        var loader = new TestGraphLoader("/testPackages/all10nodes.txt");
+        var loader = new TestGraphLoader("/testPackages/10nodes.txt");
 
         var benchmark = new AlgorithmBenchmark(() -> new ParallelBranchAndBound(new AOSolutionSpace()));
 
