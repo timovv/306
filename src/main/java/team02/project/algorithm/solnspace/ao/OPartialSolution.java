@@ -20,7 +20,12 @@ public class OPartialSolution implements PartialSolution {
     private final long[] orderedBits;
     private final long[] readyToOrderBits;
 
-    private OPartialSolution(SchedulingContext context, Allocation allocation, OPartialSolution parent, Node task, int depth, int processor, long[] orderedBits, long[] readyToOrderBits) {
+    private final int estimatedStartTime;
+    private final int heuristicCost;
+
+    private OPartialSolution(SchedulingContext context, Allocation allocation, OPartialSolution parent,
+                             Node task, int depth, int processor, long[] orderedBits, long[] readyToOrderBits,
+                             int estimatedStartTime, int heuristicCost) {
         this.context = context;
         this.allocation = allocation;
         this.parent = parent;
@@ -29,6 +34,8 @@ public class OPartialSolution implements PartialSolution {
         this.processor = processor;
         this.orderedBits = orderedBits;
         this.readyToOrderBits = readyToOrderBits;
+        this.estimatedStartTime = estimatedStartTime;
+        this.heuristicCost = heuristicCost;
     }
 
     public static OPartialSolution makeEmpty(SchedulingContext ctx, Allocation allocation) {
@@ -44,7 +51,8 @@ public class OPartialSolution implements PartialSolution {
             }
         }
 
-        return new OPartialSolution(ctx, allocation, null, null, 0, 0, orderedBits, readyToOrderBits);
+        return new OPartialSolution(ctx, allocation, null, null, 0, 0, orderedBits,
+                readyToOrderBits, 0, 0);
     }
 
     @Override
@@ -52,9 +60,10 @@ public class OPartialSolution implements PartialSolution {
         if(isComplete()) {
             return makeComplete().getFinishTime();
         } else {
-            return allocation.getEstimatedFinishTime();
+            return Math.max(allocation.getEstimatedFinishTime(), heuristicCost);
         }
     }
+
 
     @Override
     public Set<PartialSolution> expand() {
@@ -75,6 +84,25 @@ public class OPartialSolution implements PartialSolution {
 
     private Set<PartialSolution> expandProcessor(int processorNumber) {
         Set<PartialSolution> output = new HashSet<>();
+
+        // Build a table of all the previously calculated estimated start time
+        Map<Node, Integer> historicEstimatedStartTimes = new HashMap<>();
+
+        // The sum of weights already ordered on each processor
+        int[] totalOrdered = new int[context.getProcessorCount()];
+
+        // Latest finish time for each processor
+        int[] latestFinishTime = new int[context.getProcessorCount()];
+
+        OPartialSolution prev = this;
+        while (!prev.isEmpty()) {
+            historicEstimatedStartTimes.put(prev.getTask(), prev.getEstimatedStartTime());
+            totalOrdered[prev.getProcessor()] += prev.getTask().getWeight();
+            latestFinishTime[prev.getProcessor()] = Math.max(latestFinishTime[prev.getProcessor()],
+                    prev.getEstimatedStartTime() + prev.getTask().getWeight());
+            prev = prev.getParent();
+        }
+
         for(Node node : allocation.getTasksFor(processorNumber)) {
             if((readyToOrderBits[processorNumber] & (1 << node.getIndex())) == 0) {
                 continue;
@@ -96,7 +124,41 @@ public class OPartialSolution implements PartialSolution {
                 }
             }
 
-            output.add(new OPartialSolution(context, allocation, this, node, depth + 1, processorNumber, newOrderedBits, newReadyBits));
+            int newDataReadyTime = 0;
+            for (Map.Entry<Node, Integer> pred : node.getIncomingEdges().entrySet()) {
+                int predFinishTime;
+                if (historicEstimatedStartTimes.containsKey(pred.getKey())) {
+                    predFinishTime = historicEstimatedStartTimes.get(pred.getKey()) + pred.getKey().getWeight();
+                } else {
+                    predFinishTime = allocation.getTopLevelFor(pred.getKey());
+                }
+                if (allocation.getProcessorFor(pred.getKey()) != processorNumber) {
+                    predFinishTime += pred.getValue();
+                }
+                newDataReadyTime = Math.max(newDataReadyTime, predFinishTime);
+            }
+
+            int maxOrderedLoad = 0;
+            for (int i = 0; i < context.getProcessorCount(); i++) {
+                maxOrderedLoad = Math.max(maxOrderedLoad,
+                        latestFinishTime[i] + (allocation.getLoadFor(i) - totalOrdered[i]));
+            }
+
+
+            int newEstStartTime = Math.max(latestFinishTime[processorNumber], newDataReadyTime);
+
+            output.add(new OPartialSolution(
+                context,
+                allocation,
+                this,
+                node,
+                depth + 1,
+                processorNumber,
+                newOrderedBits,
+                newReadyBits,
+                newEstStartTime,
+                Math.max(this.heuristicCost, Math.max(newEstStartTime + allocation.getBottomLevelFor(node), maxOrderedLoad))
+            ));
         }
 
         return output;
@@ -128,6 +190,10 @@ public class OPartialSolution implements PartialSolution {
         return false;
     }
 
+    public boolean isEmpty() {
+        return this.parent == null;
+    }
+
     public boolean isOrderingComplete() {
         return depth == context.getTaskGraph().getNodes().size();
     }
@@ -143,5 +209,9 @@ public class OPartialSolution implements PartialSolution {
 
     public int getProcessor() {
         return processor;
+    }
+
+    public int getEstimatedStartTime() {
+        return estimatedStartTime;
     }
 }

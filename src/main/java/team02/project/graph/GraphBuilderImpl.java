@@ -2,10 +2,13 @@ package team02.project.graph;
 
 import lombok.val;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
+import java.util.Queue;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class GraphBuilderImpl implements GraphBuilder {
     private MutableGraph wip = new MutableGraph();
@@ -17,27 +20,81 @@ public class GraphBuilderImpl implements GraphBuilder {
     public Graph build() {
         built = true;
 
-        // set up the dependencies
-        // TODO: as we add more preprocessing steps it would be nice to move them outside of GraphBuilder.
-        setupDependencies();
+        LinkedHashSet<MutableNode> order = new LinkedHashSet<>();
+
+        for(MutableNode node : wip.getNodes()) {
+            topologicalVisit(order,  node);
+        }
+
+        wip.setNodes(new ArrayList<>(order)); // LinkedHashSet is not a List =(
+
+        calculateBottomLevels();
+        calculateTopLevels();
         return wip;
     }
 
-    private void setupDependencies() {
-        // todo: could optimise this a bit
-        for(Node node : wip.getNodes()) {
-            Set<Node> dependencies = new HashSet<>();
-            LinkedList<Node> queue = new LinkedList<>();
-            queue.addLast(node);
-            while(!queue.isEmpty()) {
-                Node current = queue.removeFirst();
-                for(Node dependency : current.getIncomingEdges().keySet()) {
-                    dependencies.add(dependency);
-                    queue.addLast(dependency);
-                }
-            }
+    /**
+     * Visits each Node, records the topological order and set their depedents
+     *
+     * @param order
+     * @param toVisit
+     * @return
+     */
+    private Set<Node> topologicalVisit(LinkedHashSet<MutableNode> order, MutableNode toVisit) {
+        Set<Node> dependents = new HashSet<>();
 
-            node.getDependencies().addAll(dependencies);
+        if(order.contains(toVisit)) {
+            return toVisit.getDependencies();
+        }
+
+        for(Node node : toVisit.getIncomingEdges().keySet()) {
+            dependents.addAll(topologicalVisit(order, (MutableNode) node));
+            dependents.add(node);
+        }
+
+        order.add(toVisit);
+        toVisit.setDependencies(dependents);
+        return dependents;
+    }
+
+    private void calculateBottomLevels() {
+        // do the BFS to get bottom levels of wip
+        Queue<MutableNode> queue = wip.getNodes().stream()
+                .filter(x -> x.getOutgoingEdges().isEmpty())
+                .collect(Collectors.toCollection(LinkedList::new));
+
+        while(!queue.isEmpty()){
+            val node = queue.poll();
+            val bottomLevel = node.getOutgoingEdges().keySet()
+                    .stream()
+                    .mapToInt(Node::getBottomLevel)
+                    .max()
+                    .orElse(0) + node.getWeight();
+            node.setBottomLevel(bottomLevel);
+
+            for(val node2 : node.getIncomingEdges().keySet()) {
+                queue.offer((MutableNode)node2);
+            }
+        }
+    }
+
+    private void calculateTopLevels() {
+        Queue<MutableNode> queue = wip.getNodes().stream()
+                .filter(x -> x.getIncomingEdges().isEmpty())
+                .collect(Collectors.toCollection(LinkedList::new));
+
+        while(!queue.isEmpty()){
+            val node = queue.poll();
+            val topLevel = node.getIncomingEdges().keySet()
+                    .stream()
+                    .mapToInt(Node::getTopLevel)
+                    .max()
+                    .orElse(0) + node.getWeight();
+            node.setTopLevel(topLevel);
+
+            for(val node2 : node.getOutgoingEdges().keySet()) {
+                queue.offer((MutableNode)node2);
+            }
         }
     }
 

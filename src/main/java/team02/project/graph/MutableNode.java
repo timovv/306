@@ -11,6 +11,8 @@ import java.util.Set;
 public class MutableNode implements Node {
     String id;
     int weight;
+    int bottomLevel;
+    int topLevel;
     Map<Node, Integer> incomingEdges = new HashMap<>();
     Map<Node, Integer> outgoingEdges = new HashMap<>();
     Set<Node> dependencies = new HashSet<>();

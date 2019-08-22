@@ -16,6 +16,10 @@ public interface Node {
      */
     int getWeight();
 
+
+    int getBottomLevel();
+    int getTopLevel();
+
     /**
      * Get a unique integer index of this Node, which is guaranteed to be constrained by 0 <= index < graph.getNodes().
      * @return The index of this node.
