@@ -2,7 +2,9 @@ package team02.project.graph;
 
 import lombok.val;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Set;
@@ -18,43 +20,41 @@ public class GraphBuilderImpl implements GraphBuilder {
     public Graph build() {
         built = true;
 
-        // set up the dependencies
-        // TODO: as we add more preprocessing steps it would be nice to move them outside of GraphBuilder.
-        setupDependencies();
+        LinkedHashSet<MutableNode> order = new LinkedHashSet<>();
 
-        // create a topological order, if this is too slow then we can do it using the normal algorithm
-        wip.getNodes().sort((a, b) -> {
-            if (a.getDependencies().contains(b)) {
-                // a depends on b => (a > b)
-                return 1;
-            } else if (b.getDependencies().contains(a)) {
-                // b depends on a => (b > a)
-                return -1;
-            } else {
-                return 0;
-            }
-        });
+        for(MutableNode node : wip.getNodes()) {
+            topologicalVisit(order,  node);
+        }
+
+        wip.setNodes(new ArrayList<>(order)); // LinkedHashSet is not a List =(
+
         calculateBottomLevels();
         calculateTopLevels();
         return wip;
     }
 
-    private void setupDependencies() {
-        // todo: could optimise this a bit
-        for(Node node : wip.getNodes()) {
-            Set<Node> dependencies = new HashSet<>();
-            LinkedList<Node> queue = new LinkedList<>();
-            queue.addLast(node);
-            while(!queue.isEmpty()) {
-                Node current = queue.removeFirst();
-                for(Node dependency : current.getIncomingEdges().keySet()) {
-                    dependencies.add(dependency);
-                    queue.addLast(dependency);
-                }
-            }
+    /**
+     * Visits each Node, records the topological order and set their depedents
+     *
+     * @param order
+     * @param toVisit
+     * @return
+     */
+    private Set<Node> topologicalVisit(LinkedHashSet<MutableNode> order, MutableNode toVisit) {
+        Set<Node> dependents = new HashSet<>();
 
-            node.getDependencies().addAll(dependencies);
+        if(order.contains(toVisit)) {
+            return toVisit.getDependencies();
         }
+
+        for(Node node : toVisit.getIncomingEdges().keySet()) {
+            dependents.addAll(topologicalVisit(order, (MutableNode) node));
+            dependents.add(node);
+        }
+
+        order.add(toVisit);
+        toVisit.setDependencies(dependents);
+        return dependents;
     }
 
     private void calculateBottomLevels() {
