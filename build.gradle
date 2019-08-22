@@ -48,7 +48,7 @@ dependencies {
     compile 'com.google.guava:guava:23.0'
 
     // https://mvnrepository.com/artifact/eu.hansolo/tilesfx
-    compile group: 'eu.hansolo', name: 'tilesfx', version: '1.0.7'
+    compile group: 'eu.hansolo', name: 'tilesfx', version: '1.6.8'
 
     compile group: 'commons-cli', name: 'commons-cli', version: '1.4'
 

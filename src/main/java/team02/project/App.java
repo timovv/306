@@ -83,7 +83,7 @@ public class App {
         return config;
     }
 
-    private static void writeOutput(Path outputFile, SchedulingContext ctx, Schedule maybeOptimal) {
+    public static void writeOutput(Path outputFile, SchedulingContext ctx, Schedule maybeOptimal) {
         System.out.println("Schedule calculated, outputting to " + outputFile.toString() + "...");
         try {
             OutputSchedule.outputGraph(outputFile, ctx, maybeOptimal);
@@ -93,16 +93,16 @@ public class App {
         }
     }
 
-    private static Schedule calculateSchedule(CLIConfig config, Graph graph, SchedulingContext ctx) {
+    public static Schedule calculateSchedule(CLIConfig config, Graph graph, SchedulingContext ctx) {
         System.out.println("Determining solution for "
                 + config.numberOfScheduleProcessors() +
                 " processors on a graph of " + graph.getNodes().size() + " nodes");
         // TODO: command-line switch to allow users to select algorithm
-        SchedulingAlgorithm algorithm = new TopologicalSortAlgorithm();
+        SchedulingAlgorithm algorithm = new NaiveBranchBoundAlgorithm();
         return algorithm.calculateOptimal(ctx);
     }
 
-    private static Graph createGraph(Path inputFile) {
+    public static Graph createGraph(Path inputFile) {
         GraphBuilder builder = new GraphBuilderImpl();
         try {
             GraphReader.readInto(inputFile, builder);

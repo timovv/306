@@ -1,19 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-
-<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="565.0" prefWidth="1024.0" xmlns="http://javafx.com/javafx/8.0.192" xmlns:fx="http://javafx.com/fxml/1">
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="565.0" prefWidth="1024.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1">
    <children>
       <HBox prefHeight="384.0" prefWidth="1024.0">
          <children>
-            <VBox prefHeight="379.0" prefWidth="640.0">
-               <children>
-                  <ScrollPane fx:id="ganttBox" prefHeight="404.0" prefWidth="640.0" style="-fx-background-color: red;" />
-               </children>
-            </VBox>
+            <VBox fx:id="ganttBox" prefHeight="379.0" prefWidth="640.0" />
             <VBox prefHeight="384.0" prefWidth="389.0">
                <children>
                   <HBox fx:id="allocBox" prefHeight="214.0" prefWidth="387.0" style="-fx-border-color: yellow;" />
