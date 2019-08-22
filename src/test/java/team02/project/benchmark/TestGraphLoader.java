@@ -20,7 +20,7 @@ public class TestGraphLoader implements Iterable<TestGraphLoader.TestGraph> {
     private static final String DELIMITER = ",";
     private static final String EXTENSION = ".dot";
 
-    private final Map<String, TestGraph> testGraphs = new HashMap<>();
+    private final ArrayList<TestGraph> testGraphs = new ArrayList<>();
 
 
     /**
@@ -58,8 +58,7 @@ public class TestGraphLoader implements Iterable<TestGraphLoader.TestGraph> {
                 var tg = new TestGraph(
                         Paths.get(PREFIX + name + EXTENSION), name,
                         numNodes, numProcessors, optimal);
-
-                testGraphs.put(name, tg);
+                testGraphs.add(tg);
                 if (size == ++count) {
                     break;
                 }
@@ -78,35 +77,17 @@ public class TestGraphLoader implements Iterable<TestGraphLoader.TestGraph> {
      * @param path The path of the text file to load.
      */
     public TestGraphLoader(String path) {
-        // TODO: Change it so that it takes in csv of graphs with properties, not a list of graph names
-        try {
-            Scanner scannerForFile = new Scanner(getClass().getResourceAsStream(path));
-            while (scannerForFile.hasNext()) {
-                // run test for this graph
-                String graphToTry = scannerForFile.next();
-                Scanner scanner = new Scanner(Paths.get(GRAPH_FILE));
-                while (scanner.hasNextLine()) {
-                    String[] parts = scanner.nextLine().split(DELIMITER);
-                    var name = parts[0];
-                    int numNodes = Integer.parseInt(parts[1]);
-                    int numProcessors = Integer.parseInt(parts[2]);
-                    int optimal = Integer.parseInt(parts[3]);
-                    if (graphToTry.matches(name)) {
-                        var tg = new TestGraph(
-                                Paths.get(PREFIX + name + EXTENSION), name,
-                                numNodes, numProcessors, optimal);
-                        testGraphs.put(name, tg);
-                        break;
-                    }
-                }
-                scanner.close();
-            }
-            scannerForFile.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+        Scanner scanner = new Scanner(getClass().getResourceAsStream(path));
+        while (scanner.hasNextLine()) {
+            String[] parts = scanner.nextLine().split(DELIMITER);
+            var name = parts[0];
+            int numNodes = Integer.parseInt(parts[1]);
+            int numProcessors = Integer.parseInt(parts[2]);
+            int optimal = Integer.parseInt(parts[3]);
+            var tg = new TestGraph(Paths.get(PREFIX + name + EXTENSION), name, numNodes, numProcessors, optimal);
+            testGraphs.add(tg);
         }
+        scanner.close();
     }
 
     /**
@@ -115,7 +96,7 @@ public class TestGraphLoader implements Iterable<TestGraphLoader.TestGraph> {
      * @return The {@link TestGraph} or null if doesn't exist
      */
     public TestGraph get(String fileName) {
-        return testGraphs.get(fileName);
+        return testGraphs.stream().filter(x -> x.getName().equalsIgnoreCase(fileName)).findFirst().orElse(null);
     }
 
     /**
@@ -124,7 +105,7 @@ public class TestGraphLoader implements Iterable<TestGraphLoader.TestGraph> {
      */
     @Override
     public Iterator<TestGraph> iterator() {
-        return testGraphs.values().iterator();
+        return testGraphs.iterator();
     }
 
 
