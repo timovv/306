@@ -29,8 +29,7 @@ public class FXApp extends Application {
             loader.setController(mainController);
             Parent root = loader.load();
 
-            //TODO
-            mainController.initManagers();
+            mainController.init();
 
             primaryStage.setTitle("Team-02");
 
@@ -39,8 +38,6 @@ public class FXApp extends Application {
 
             //setting and showing stage
             primaryStage.setScene(mainScene);
-            primaryStage.setMinWidth(900);
-            primaryStage.setMinHeight(600);
 
             // proper exit
             primaryStage.setOnCloseRequest(event -> System.exit(0));

@@ -1,46 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.layout.Pane?>
-<?import javafx.scene.text.Font?>
-<?import javafx.scene.text.Text?>
-<?import javafx.scene.text.TextFlow?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="900.0" styleClass="background" stylesheets="@Main.css" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1">
+
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="565.0" prefWidth="1024.0" xmlns="http://javafx.com/javafx/8.0.192" xmlns:fx="http://javafx.com/fxml/1">
    <children>
-      <Pane prefHeight="465.0" prefWidth="900.0" styleClass="alg-vis-background" stylesheets="@Main.css">
+      <HBox prefHeight="384.0" prefWidth="1024.0">
          <children>
-            <Text layoutX="436.0" layoutY="42.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Text" />
+            <VBox prefHeight="379.0" prefWidth="640.0">
+               <children>
+                  <ScrollPane fx:id="ganttBox" prefHeight="404.0" prefWidth="640.0" style="-fx-background-color: red;" />
+               </children>
+            </VBox>
+            <VBox prefHeight="384.0" prefWidth="389.0">
+               <children>
+                  <HBox fx:id="allocBox" prefHeight="214.0" prefWidth="387.0" style="-fx-border-color: yellow;" />
+                  <HBox fx:id="orderBox" prefHeight="205.0" prefWidth="387.0" style="-fx-border-color: blue;" />
+               </children>
+            </VBox>
          </children>
-      </Pane>
-      <Text layoutX="23.0" layoutY="563.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Number of Processors:">
-         <font>
-            <Font name="DejaVu Sans Mono Bold" size="13.0" />
-         </font>
-      </Text>
-      <Text layoutX="23.0" layoutY="541.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Output Filename:">
-         <font>
-            <Font name="DejaVu Sans Mono Bold" size="13.0" />
-         </font>
-      </Text>
-      <Text fx:id="inputLab" layoutX="23.0" layoutY="520.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Input Filename:">
-         <font>
-            <Font name="DejaVu Sans Mono Bold" size="13.0" />
-         </font>
-      </Text>
-      <Text fx:id="percentUse" layoutX="789.0" layoutY="531.0" strokeType="OUTSIDE" strokeWidth="0.0" wrappingWidth="59.8583984375" />
-      <Text fx:id="memUse" layoutX="789.0" layoutY="494.0" strokeType="OUTSIDE" strokeWidth="0.0" wrappingWidth="59.8583984375" />
-      <Text fx:id="memJVM" layoutX="789.0" layoutY="457.0" strokeType="OUTSIDE" strokeWidth="0.0" wrappingWidth="59.8583984375" />
-      <Pane layoutX="658.0" layoutY="436.0" prefHeight="150.0" prefWidth="229.0" style="-fx-background-color: #fafafa;">
+      </HBox>
+      <HBox prefHeight="192.0" prefWidth="1024.0">
          <children>
-            <TextFlow layoutX="8.0" layoutY="112.0" prefHeight="31.0" prefWidth="212.0" style="-fx-background-color: yellow;" />
-            <Text layoutX="36.0" layoutY="33.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Operating on x cores">
-               <font>
-                  <Font name="DejaVu Sans Mono Bold" size="13.0" />
-               </font>
-            </Text>
+            <VBox fx:id="statsBox" prefHeight="187.0" prefWidth="641.0" style="-fx-border-color: blue;" />
+            <VBox fx:id="schedulesBox" prefHeight="187.0" prefWidth="189.0" style="-fx-border-color: yellow;" />
+            <VBox fx:id="memBox" prefHeight="187.0" prefWidth="205.0" style="-fx-border-color: red;" />
          </children>
-      </Pane>
-      <Pane layoutX="417.0" layoutY="436.0" prefHeight="150.0" prefWidth="229.0" style="-fx-background-color: #fafafa;" />
+      </HBox>
    </children>
-</AnchorPane>
+</VBox>
