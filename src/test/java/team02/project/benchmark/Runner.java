@@ -15,7 +15,7 @@ public class Runner {
 
         System.out.println("Starting...");
 
-        var loader = new TestGraphLoader("/testPackages/10nodes.txt");
+        var loader = new TestGraphLoader("/testPackages/all10nodes.txt");
 
         var benchmark = new AlgorithmBenchmark(() -> new ParallelBranchAndBound(new AOSolutionSpace()));
 
