@@ -11,10 +11,10 @@ import java.util.LinkedList;
 /**
  * Bounds any complete schedules which exceed the current upper bound
  */
-public class NaiveBranchBoundAlgorithm implements SchedulingAlgorithm {
+public class SequentialBranchBoundAlgorithm implements SchedulingAlgorithm {
     private SolutionSpace solutionSpace;
 
-    public NaiveBranchBoundAlgorithm(SolutionSpace solutionSpace) {
+    public SequentialBranchBoundAlgorithm(SolutionSpace solutionSpace) {
         this.solutionSpace = solutionSpace;
     }
 

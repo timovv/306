@@ -1,7 +1,7 @@
 package team02.project.benchmark;
 
 import lombok.var;
-import team02.project.algorithm.NaiveBranchBoundAlgorithm;
+import team02.project.algorithm.SequentialBranchBoundAlgorithm;
 import team02.project.algorithm.ParallelBranchAndBound;
 import team02.project.algorithm.SchedulingAlgorithm;
 import team02.project.algorithm.solnspace.ao.AOSolutionSpace;
