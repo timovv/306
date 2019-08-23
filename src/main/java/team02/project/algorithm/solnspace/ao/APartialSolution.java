@@ -160,7 +160,7 @@ public class APartialSolution implements PartialSolution {
         return getParent() == null;
     }
 
-    private boolean isCompleteAllocation() {
+    public boolean isCompleteAllocation() {
         return getDepth() == getContext().getTaskGraph().getNodes().size();
     }
 

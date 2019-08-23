@@ -1,6 +1,7 @@
 package team02.project.benchmark;
 
 import lombok.var;
+import team02.project.algorithm.AStarAlgorithm;
 import team02.project.algorithm.NaiveBranchBoundAlgorithm;
 import team02.project.algorithm.ParallelBranchAndBound;
 import team02.project.algorithm.SchedulingAlgorithm;
@@ -15,9 +16,15 @@ public class Runner {
 
         System.out.println("Starting...");
 
-        var loader = new TestGraphLoader("/testPackages/all10nodes.txt");
+        var loader = new TestGraphLoader(
+                (nodes, procs) -> nodes <= 10 && procs <= 2,
+                1,
+                "small_boi");
 
-        var benchmark = new AlgorithmBenchmark(() -> new ParallelBranchAndBound(new AOSolutionSpace()));
+
+//        var benchmark = new AlgorithmBenchmark(() -> new ParallelBranchAndBound(new AOSolutionSpace()));
+
+        var benchmark = new AlgorithmBenchmark(() -> new AStarAlgorithm(new AOSolutionSpace()));
 
         int total = 0;
         for (var testGraph : loader) {
