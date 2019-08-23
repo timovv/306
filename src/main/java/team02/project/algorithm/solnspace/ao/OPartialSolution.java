@@ -57,11 +57,7 @@ public class OPartialSolution implements PartialSolution {
 
     @Override
     public int getEstimatedFinishTime() {
-        if(isComplete()) {
-            return makeComplete().getFinishTime();
-        } else {
-            return Math.max(allocation.getEstimatedFinishTime(), heuristicCost);
-        }
+        return Math.max(allocation.getEstimatedFinishTime(), heuristicCost);
     }
 
 
@@ -139,7 +135,7 @@ public class OPartialSolution implements PartialSolution {
             }
         }
 
-        if(canFixOrder) {
+        if(canFixOrder && (readyToOrderBits[processorNumber] & (readyToOrderBits[processorNumber] - 1)) != 0) {
             final Node commonParentFinal = commonParent;
             final Node commonChildFinal = commonChild;
 

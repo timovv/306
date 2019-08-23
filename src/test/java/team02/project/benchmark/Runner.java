@@ -17,7 +17,7 @@ public class Runner {
 
         var loader = new TestGraphLoader("/testPackages/all10nodes.txt");
 
-        var benchmark = new AlgorithmBenchmark(() -> new ParallelBranchAndBound(new AOSolutionSpace()));
+        var benchmark = new AlgorithmBenchmark(() -> new SequentialBranchBoundAlgorithm(new AOSolutionSpace()));
 
         int total = 0;
         for (var testGraph : loader) {
