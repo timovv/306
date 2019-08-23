@@ -204,7 +204,7 @@ public class MainController {
         final CategoryAxis processorAxis = new CategoryAxis();
         processorAxis.setLabel("");
         processorAxis.setTickLabelFill(Color.CHOCOLATE);
-        processorAxis.setTickLabelGap(50);
+        processorAxis.setTickLabelGap(1);
         processorAxis.setCategories(FXCollections.<String>observableArrayList(Arrays.asList(processors)));
 
         // Setting up chart
@@ -237,8 +237,7 @@ public class MainController {
             int idOfTask = scTask.getProcessorId();
 
             XYChart.Data newData = new XYChart.Data(scTask.getStartTime(), "Processor "+ String.valueOf(idOfTask),
-                    new ExtraData(scTask.getFinishTime()-scTask.getStartTime(), "task-style"));
-            Tooltip.install(newData.getNode(), new Tooltip("Symbol-0"));
+                    new ExtraData(scTask, "task-style"));
 
             seriesArray[idOfTask].getData().add(newData);
 

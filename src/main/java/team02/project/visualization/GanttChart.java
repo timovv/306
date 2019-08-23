@@ -13,9 +13,11 @@ import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.ValueAxis;
 import javafx.scene.chart.XYChart;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
+import team02.project.algorithm.ScheduledTask;
 
 /*
  * All credit to "Roland" from Stackoverflow for this code.
@@ -27,11 +29,16 @@ public class GanttChart<X,Y> extends XYChart<X,Y> {
 
         public long length;
         public String styleClass;
+        private ScheduledTask scTask;
 
+        public ScheduledTask getScTask() {
+            return scTask;
+        }
 
-        public ExtraData(long lengthMs, String styleClass) {
+        public ExtraData(ScheduledTask scTask, String styleClass) {
             super();
-            this.length = lengthMs;
+            this.length = scTask.getFinishTime()-scTask.getStartTime();
+            this.scTask = scTask;
             this.styleClass = styleClass;
         }
 
@@ -76,6 +83,10 @@ public class GanttChart<X,Y> extends XYChart<X,Y> {
         return ((ExtraData) obj).getLength();
     }
 
+    private static ScheduledTask getScheduledTask(Object obj){
+        return ((ExtraData) obj).getScTask();
+    }
+
     @Override
     protected void layoutPlotChildren() {
 
@@ -92,6 +103,20 @@ public class GanttChart<X,Y> extends XYChart<X,Y> {
                     continue;
                 }
                 Node block = item.getNode();
+
+                // **** Liam's super cool custom code to add tooltips to all datapoints
+                ScheduledTask scTask = getScheduledTask(item.getExtraValue());
+                team02.project.graph.Node task=scTask.getTask();
+                Tooltip tooltipToAdd = new Tooltip("Task: "+task.getId()+"\nStart Time: "+scTask.getStartTime()
+                        + "\nEnd Time: "+scTask.getFinishTime());
+
+                //Custom tooltip style
+                tooltipToAdd.setStyle("-fx-font-size: 12px;\n-fx-background-color: RED;");
+
+
+                Tooltip.install(block, tooltipToAdd);
+                // **** End of Liam's super cool code.
+
                 Rectangle ellipse;
                 if (block != null) {
                     if (block instanceof StackPane) {
