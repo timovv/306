@@ -113,7 +113,6 @@ public class GanttChart<X,Y> extends XYChart<X,Y> {
                 //Custom tooltip style
                 tooltipToAdd.setStyle("-fx-font-size: 12px;\n-fx-background-color: RED;");
 
-
                 Tooltip.install(block, tooltipToAdd);
                 // **** End of Liam's super cool code.
 
