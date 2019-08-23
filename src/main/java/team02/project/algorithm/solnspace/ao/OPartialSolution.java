@@ -46,7 +46,7 @@ public class OPartialSolution implements PartialSolution {
         for(int i = 0; i < ctx.getProcessorCount(); ++i) {
             for (Node node : allocation.getTasksFor(i)) {
                 if (isTaskReadyToOrder(node, orderedBits[i], allocation.getTasksFor(i))) {
-                    readyToOrderBits[i] |= (1 << node.getIndex());
+                    readyToOrderBits[i] |= (1L << node.getIndex());
                 }
             }
         }
@@ -92,13 +92,21 @@ public class OPartialSolution implements PartialSolution {
 
         calculateHeuristicInfo(totalOrdered, latestFinishTime, historicEstimatedStartTimes);
 
+        try {
+            allocation.getTasksFor(processorNumber);
+        } catch (Exception e) {
+            OPartialSolution current = this;
+            while(current.depth > 3) current = current.parent;
+            current.expand();
+        }
+
         // Check for fixed task order
         // 1. Same parent and child (or no parent/child)
         Node commonParent = null, commonChild = null;
         boolean canFixOrder = false;
         outer:
         for(Node node : allocation.getTasksFor(processorNumber)) {
-            if ((readyToOrderBits[processorNumber] & (1 << node.getIndex())) == 0) {
+            if ((readyToOrderBits[processorNumber] & (1L << node.getIndex())) == 0) {
                 continue;
             }
 
@@ -142,7 +150,7 @@ public class OPartialSolution implements PartialSolution {
             // 1. Place the tasks in fork order.
             List<Node> nodes = new ArrayList<>();
             for(Node node : allocation.getTasksFor(processorNumber)) {
-                if((readyToOrderBits[processorNumber] & (1 << node.getIndex())) != 0) {
+                if((readyToOrderBits[processorNumber] & (1L << node.getIndex())) != 0) {
                     nodes.add(node);
                 }
             }
@@ -184,7 +192,7 @@ public class OPartialSolution implements PartialSolution {
         }
 
         for (Node node : allocation.getTasksFor(processorNumber)) {
-            if ((readyToOrderBits[processorNumber] & (1 << node.getIndex())) == 0) {
+            if ((readyToOrderBits[processorNumber] & (1L << node.getIndex())) == 0) {
                 continue;
             }
 
@@ -220,14 +228,11 @@ public class OPartialSolution implements PartialSolution {
         newOrderedBits[processorNumber] |= 1 << node.getIndex();
         newReadyBits[processorNumber] &= ~(1 << node.getIndex());
 
-        for(Node maybeNowReady : node.getOutgoingEdges().keySet()) {
-            if(allocation.getTasksFor(processorNumber).contains(maybeNowReady)) {
-                boolean isNowReady = isTaskReadyToOrder(maybeNowReady, newOrderedBits[processorNumber],
-                        allocation.getTasksFor(processorNumber));
-
-                if(isNowReady) {
-                    newReadyBits[processorNumber] |= 1 << maybeNowReady.getIndex();
-                }
+        for(Node dependent : node.getDependents()) {
+            if(allocation.getTasksFor(processorNumber).contains(dependent) && isTaskReadyToOrder(dependent,
+                    newOrderedBits[processorNumber],
+                    allocation.getTasksFor(processorNumber))) {
+                newReadyBits[processorNumber] |= 1 << dependent.getIndex();
             }
         }
 
@@ -269,11 +274,11 @@ public class OPartialSolution implements PartialSolution {
     }
 
     private static boolean isTaskReadyToOrder(Node task, long orderedBits, Set<Node> allocatedTasks) {
-        for(Node directDependency : task.getIncomingEdges().keySet()) {
+        for(Node dependency : task.getDependencies()) {
             // if this dependency is on this processor and it hasn't been ordered yet then we can't
             // schedule it
-            if(allocatedTasks.contains(directDependency)
-                && ((orderedBits & (1 << directDependency.getIndex())) == 0)) {
+            if(allocatedTasks.contains(dependency)
+                && ((orderedBits & (1L << dependency.getIndex())) == 0)) {
                 return false;
             }
         }

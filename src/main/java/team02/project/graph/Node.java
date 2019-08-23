@@ -34,4 +34,6 @@ public interface Node {
     Map<Node, Integer> getIncomingEdges();
 
     Set<Node> getDependencies();
+
+    Set<Node> getDependents();
 }

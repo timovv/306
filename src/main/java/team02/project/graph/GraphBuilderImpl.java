@@ -21,9 +21,11 @@ public class GraphBuilderImpl implements GraphBuilder {
         built = true;
 
         LinkedHashSet<MutableNode> order = new LinkedHashSet<>();
+        LinkedHashSet<MutableNode> reverseOrder = new LinkedHashSet<>();
 
         for(MutableNode node : wip.getNodes()) {
             topologicalVisit(order,  node);
+            reverseTopologicalVisit(reverseOrder, node);
         }
 
         wip.setNodes(new ArrayList<>(order)); // LinkedHashSet is not a List =(
@@ -41,19 +43,36 @@ public class GraphBuilderImpl implements GraphBuilder {
      * @return
      */
     private Set<Node> topologicalVisit(LinkedHashSet<MutableNode> order, MutableNode toVisit) {
-        Set<Node> dependents = new HashSet<>();
+        Set<Node> dependencies = new HashSet<>();
 
-        if(order.contains(toVisit)) {
+        if (order.contains(toVisit)) {
             return toVisit.getDependencies();
         }
 
-        for(Node node : toVisit.getIncomingEdges().keySet()) {
-            dependents.addAll(topologicalVisit(order, (MutableNode) node));
-            dependents.add(node);
+        for (Node node : toVisit.getIncomingEdges().keySet()) {
+            dependencies.addAll(topologicalVisit(order, (MutableNode) node));
+            dependencies.add(node);
         }
 
         order.add(toVisit);
-        toVisit.setDependencies(dependents);
+        toVisit.setDependencies(dependencies);
+        return dependencies;
+    }
+
+    private Set<Node> reverseTopologicalVisit(LinkedHashSet<MutableNode> reverseOrder, MutableNode toVisit) {
+        if(reverseOrder.contains(toVisit)) {
+            return toVisit.getDependents();
+        }
+
+        Set<Node> dependents = new HashSet<>();
+
+        for(Node node : toVisit.getOutgoingEdges().keySet()) {
+            dependents.addAll(reverseTopologicalVisit(reverseOrder, (MutableNode)node));
+            dependents.add(node);
+        }
+
+        reverseOrder.add(toVisit);
+        toVisit.setDependents(dependents);
         return dependents;
     }
 
