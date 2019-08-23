@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.text.TextFlow?>
 
 <VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="565.0" prefWidth="1024.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1">
    <children>
@@ -18,7 +21,34 @@
       </HBox>
       <HBox prefHeight="192.0" prefWidth="1024.0">
          <children>
-            <VBox fx:id="statsBox" prefHeight="187.0" prefWidth="641.0" style="-fx-border-color: blue;" />
+            <VBox fx:id="statsBox" prefHeight="187.0" prefWidth="641.0" style="-fx-border-color: blue;">
+               <children>
+                  <Pane prefHeight="200.0" prefWidth="200.0">
+                     <children>
+                        <Text layoutX="279.0" layoutY="62.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Current Best" />
+                        <Text layoutX="75.0" layoutY="62.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Schedules Created" />
+                        <Text layoutX="502.0" layoutY="62.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Time Elapsed" />
+                        <TextFlow fx:id="inGraphFlow" layoutX="14.0" layoutY="93.0" prefHeight="17.0" prefWidth="588.0">
+                           <children>
+                              <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Input Graph: " />
+                           </children>
+                        </TextFlow>
+                        <TextFlow fx:id="outGraphFlow" layoutX="14.0" layoutY="115.0" prefHeight="17.0" prefWidth="560.0">
+                           <children>
+                              <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Output Graph: " />
+                           </children>
+                        </TextFlow>
+                        <TextFlow fx:id="numProFlow" layoutX="14.0" layoutY="136.0" prefHeight="17.0" prefWidth="523.0">
+                           <children>
+                              <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Number of Processors: " />
+                           </children>
+                        </TextFlow>
+                        <Text fx:id="schedCreatedText" layoutX="134.0" layoutY="36.0" strokeType="OUTSIDE" strokeWidth="0.0" />
+                        <Text fx:id="currentBestText" layoutX="307.0" layoutY="36.0" strokeType="OUTSIDE" strokeWidth="0.0" />
+                        <Text fx:id="timeElapsedText" layoutX="526.0" layoutY="36.0" strokeType="OUTSIDE" strokeWidth="0.0" text="0" />
+                     </children>
+                  </Pane>
+               </children></VBox>
             <VBox fx:id="schedulesBox" prefHeight="187.0" prefWidth="189.0" style="-fx-border-color: yellow;" />
             <VBox fx:id="memBox" prefHeight="187.0" prefWidth="205.0" style="-fx-border-color: red;" />
          </children>

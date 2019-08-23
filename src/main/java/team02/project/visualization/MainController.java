@@ -6,7 +6,11 @@ import eu.hansolo.tilesfx.chart.ChartData;
 import eu.hansolo.tilesfx.colors.Bright;
 import eu.hansolo.tilesfx.colors.Dark;
 import eu.hansolo.tilesfx.tools.FlowGridPane;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.collections.FXCollections;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.chart.CategoryAxis;
@@ -21,6 +25,8 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.Stop;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
+import javafx.scene.text.TextFlow;
+import javafx.util.Duration;
 import team02.project.App;
 import team02.project.algorithm.Schedule;
 import team02.project.algorithm.ScheduledTask;
@@ -29,6 +35,7 @@ import team02.project.cli.CLIConfig;
 import team02.project.graph.Graph;
 import team02.project.visualization.GanttChart.ExtraData;
 
+import java.io.File;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -57,11 +64,21 @@ public class MainController {
     @FXML
     private VBox ganttBox;
 
+    @FXML
+    private TextFlow numProFlow, inGraphFlow, outGraphFlow;
+
+    @FXML
+    private Text schedCreatedText, currentBestText, timeElapsedText;
+
     private Tile memoryTile;
     private Tile allocationTile;
     private Tile orderTile;
     private Tile scheduleTile;
     private GanttChart<Number,String> chart;
+
+    private double startTime;
+    private double currentTime;
+    private double finishTime;
 
 
 
@@ -72,7 +89,11 @@ public class MainController {
         setUpOrderTile();
         setUpScheduleTile();
         setUpGanttBox();
-        this.memoryTile.setValue(2000);
+        setUpStatsBox();
+        setUpTimer();
+
+        //TODO Remove me
+        this.memoryTile.setValue(500);
         this.scheduleTile.setValue(200);
 
 
@@ -82,7 +103,7 @@ public class MainController {
         this.memoryTile = TileBuilder.create().skinType(Tile.SkinType.BAR_GAUGE)
                 .title("Memory usage")
                 .unit("MB")
-                .maxValue(Runtime.getRuntime().maxMemory() / (1000 * 1000))
+                .maxValue(Runtime.getRuntime().maxMemory() / (1024 * 1024))
                 .threshold(Runtime.getRuntime().maxMemory() * 0.8 / (1024 * 1024))
                 .gradientStops(new Stop(0, Bright.GREEN),
                         new Stop(0.8, Bright.RED),
@@ -135,6 +156,35 @@ public class MainController {
         return new FlowGridPane(1, 1, tile);
     }
 
+    private void setUpStatsBox(){
+        numProFlow.getChildren().add(new Text(String.valueOf(config.numberOfScheduleProcessors())));
+
+        String inputString = config.inputDOTFile();
+        String outputString = config.outputDOTFile();
+
+        inputString = inputString.substring(inputString.lastIndexOf('/')+1);
+        outputString = outputString.substring(outputString.lastIndexOf('/')+1);
+
+        inGraphFlow.getChildren().add(new Text(inputString));
+        outGraphFlow.getChildren().add(new Text(outputString));
+    }
+
+    private void setUpTimer(){
+
+        startTime=System.currentTimeMillis();
+        Timeline timerHandler = new Timeline(new KeyFrame(Duration.seconds(0.05), new EventHandler<ActionEvent>() {
+
+            @Override
+            public void handle(ActionEvent event) {
+                currentTime=System.currentTimeMillis();
+                timeElapsedText.setText(""+((currentTime-startTime)/1000));
+            }
+        }));
+        timerHandler.setCycleCount(Timeline.INDEFINITE);
+        timerHandler.play();
+    }
+
+
     private void setUpGanttBox(){
 
         // Setting up number of processors and array of their names
@@ -146,7 +196,7 @@ public class MainController {
 
         // Setting up time (x) axis
         final NumberAxis timeAxis = new NumberAxis();
-        timeAxis.setLabel("Time");
+        timeAxis.setLabel("");
         timeAxis.setTickLabelFill(Color.CHOCOLATE);
         timeAxis.setMinorTickCount(1);
 
@@ -170,7 +220,7 @@ public class MainController {
         testGannt();
     }
 
-    public void updateGannt(Schedule bestSchedule){
+    private void updateGannt(Schedule bestSchedule){
 
         int numProcessers = config.numberOfScheduleProcessors();
 
@@ -199,10 +249,13 @@ public class MainController {
         for (Series series: seriesArray){
             chart.getData().add(series);
         }
+
+        // update the best text
+        currentBestText.setText(""+bestSchedule.getFinishTime());
     }
 
     //TODO ############# REMOVE ME
-    public void testGannt(){
+    private void testGannt(){
         System.out.println("Remove the test Gantt method ");
 
         Graph graph = createGraph(Paths.get(App.config.inputDOTFile()));
