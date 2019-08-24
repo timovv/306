@@ -5,22 +5,23 @@ import team02.project.algorithm.solnspace.PartialSolution;
 import team02.project.algorithm.solnspace.SolutionSpace;
 import team02.project.algorithm.solnspace.ao.AOSolutionSpace;
 import team02.project.algorithm.solnspace.els.ELSSolutionSpace;
+import team02.project.graph.Node;
 
 import java.util.LinkedList;
 
 /**
  * Bounds any complete schedules which exceed the current upper bound
  */
-public class NaiveBranchBoundAlgorithm implements SchedulingAlgorithm {
+public class SequentialBranchBoundAlgorithm implements SchedulingAlgorithm {
     private SolutionSpace solutionSpace;
 
-    public NaiveBranchBoundAlgorithm(SolutionSpace solutionSpace) {
+    public SequentialBranchBoundAlgorithm(SolutionSpace solutionSpace) {
         this.solutionSpace = solutionSpace;
     }
 
     @Override
     public Schedule calculateOptimal(SchedulingContext ctx) {
-        int ubound = Integer.MAX_VALUE; // cache the upper bound
+        int ubound = ctx.getTaskGraph().getNodes().stream().mapToInt(Node::getWeight).sum();
         PartialSolution best = null;
 
         LinkedList<PartialSolution> scheduleStack = new LinkedList<>();
@@ -45,7 +46,11 @@ public class NaiveBranchBoundAlgorithm implements SchedulingAlgorithm {
             }
         }
 
-        assert best != null;
+        if(best == null) {
+            // turns out best is just to put everything on one processor
+            return new TopologicalSortAlgorithm().calculateOptimal(ctx);
+        }
+
         return best.makeComplete();
     }
 }
