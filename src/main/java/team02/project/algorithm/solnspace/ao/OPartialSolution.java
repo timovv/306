@@ -17,14 +17,14 @@ public class OPartialSolution implements PartialSolution {
     private final int depth;
     private final int processor;
 
-    private final long[] orderedBits;
-    private final long[] readyToOrderBits;
+    private final long orderedBits;
+    private final long readyToOrderBits;
 
     private final int estimatedStartTime;
     private final int heuristicCost;
 
     private OPartialSolution(SchedulingContext context, Allocation allocation, OPartialSolution parent,
-                             Node task, int depth, int processor, long[] orderedBits, long[] readyToOrderBits,
+                             Node task, int depth, int processor, long orderedBits, long readyToOrderBits,
                              int estimatedStartTime, int heuristicCost) {
         this.context = context;
         this.allocation = allocation;
@@ -39,14 +39,14 @@ public class OPartialSolution implements PartialSolution {
     }
 
     public static OPartialSolution makeEmpty(SchedulingContext ctx, Allocation allocation) {
-        long[] orderedBits = new long[ctx.getProcessorCount()];
-        long[] readyToOrderBits = new long[ctx.getProcessorCount()];
+        long orderedBits = 0L;
+        long readyToOrderBits = 0L;
 
         // add stuff to readyToOrder (kinda pricy oops)
         for(int i = 0; i < ctx.getProcessorCount(); ++i) {
             for (Node node : allocation.getTasksFor(i)) {
-                if (isTaskReadyToOrder(node, orderedBits[i], allocation.getTasksFor(i))) {
-                    readyToOrderBits[i] |= (1L << node.getIndex());
+                if (isTaskReadyToOrder(node, orderedBits, allocation.getTasksFor(i))) {
+                    readyToOrderBits |= (1L << node.getIndex());
                 }
             }
         }
@@ -106,7 +106,7 @@ public class OPartialSolution implements PartialSolution {
         boolean canFixOrder = false;
         outer:
         for(Node node : allocation.getTasksFor(processorNumber)) {
-            if ((readyToOrderBits[processorNumber] & (1L << node.getIndex())) == 0) {
+            if ((readyToOrderBits & (1L << node.getIndex())) == 0) {
                 continue;
             }
 
@@ -143,14 +143,14 @@ public class OPartialSolution implements PartialSolution {
             }
         }
 
-        if(canFixOrder && (readyToOrderBits[processorNumber] & (readyToOrderBits[processorNumber] - 1)) != 0) {
+        if(canFixOrder && (readyToOrderBits & (readyToOrderBits - 1)) != 0) {
             final Node commonParentFinal = commonParent;
             final Node commonChildFinal = commonChild;
 
             // 1. Place the tasks in fork order.
             List<Node> nodes = new ArrayList<>();
             for(Node node : allocation.getTasksFor(processorNumber)) {
-                if((readyToOrderBits[processorNumber] & (1L << node.getIndex())) != 0) {
+                if((readyToOrderBits & (1L << node.getIndex())) != 0) {
                     nodes.add(node);
                 }
             }
@@ -192,7 +192,7 @@ public class OPartialSolution implements PartialSolution {
         }
 
         for (Node node : allocation.getTasksFor(processorNumber)) {
-            if ((readyToOrderBits[processorNumber] & (1L << node.getIndex())) == 0) {
+            if ((readyToOrderBits & (1L << node.getIndex())) == 0) {
                 continue;
             }
 
@@ -223,16 +223,16 @@ public class OPartialSolution implements PartialSolution {
 
     private OPartialSolution createChild(Node node, int processorNumber, int[] totalOrdered, int[] latestFinishTime,
                                          Map<Node, Integer> historicEstimatedStartTimes) {
-        long[] newOrderedBits = Arrays.copyOf(orderedBits, orderedBits.length);
-        long[] newReadyBits = Arrays.copyOf(readyToOrderBits, readyToOrderBits.length);
-        newOrderedBits[processorNumber] |= 1 << node.getIndex();
-        newReadyBits[processorNumber] &= ~(1 << node.getIndex());
+        long newOrderedBits = orderedBits;
+        long newReadyBits = readyToOrderBits;
+        newOrderedBits |= 1 << node.getIndex();
+        newReadyBits &= ~(1 << node.getIndex());
 
         for(Node dependent : node.getDependents()) {
             if(allocation.getTasksFor(processorNumber).contains(dependent) && isTaskReadyToOrder(dependent,
-                    newOrderedBits[processorNumber],
+                    newOrderedBits,
                     allocation.getTasksFor(processorNumber))) {
-                newReadyBits[processorNumber] |= 1 << dependent.getIndex();
+                newReadyBits |= 1 << dependent.getIndex();
             }
         }
 
