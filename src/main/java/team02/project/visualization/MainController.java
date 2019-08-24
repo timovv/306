@@ -38,15 +38,12 @@ import team02.project.visualization.GanttChart.ExtraData;
 
 import java.io.File;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 import static javafx.scene.paint.Color.rgb;
 import static team02.project.App.*;
 
-public class MainController {
+public class MainController{
 
     @FXML
     private VBox statsBox;
@@ -172,9 +169,8 @@ public class MainController {
         schedulesBox.getChildren().addAll(buildFlowGridPane(this.scheduleTile));
     }
 
-    private void incrementNumSchedules(){
-        numSchedules++;
-        schedCreatedText.setText(String.valueOf(numSchedules));
+    private void updateNumSchedules(int i){
+        schedCreatedText.setText(String.valueOf(i));
     }
 
     private FlowGridPane buildFlowGridPane(Tile tile) {
@@ -294,6 +290,4 @@ public class MainController {
 
         updateGannt(maybeOptimal);
     }
-
-
 }
