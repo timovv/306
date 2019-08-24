@@ -2,44 +2,52 @@ package team02.project.algorithm;
 
 import team02.project.graph.Node;
 
+import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.Map;
 
 /**
  * Simple algorithm that calculates a valid (but not optimal) schedule
  * by creating a topological ordering of the tasks in the input graph,
- * and then scheduling all tasks on one processor in that order.
+ * and then scheduling all tasks on N processor in that order.
  */
 public class TopologicalSortAlgorithm implements SchedulingAlgorithm {
 
+
+    /**
+     * @param ctx The {@link SchedulingContext} of the algorithm
+     * @return A valid schedule based on topological ordering
+     */
     @Override
     public Schedule calculateOptimal(SchedulingContext ctx) {
-        LinkedHashSet<Node> order = new LinkedHashSet<>();
+        Map<Node, ScheduledTask> scheduledTaskMap = new HashMap<>();
+        int[] earliestProcessorFree = new int[ctx.getProcessorCount()];
 
-        for(Node node : ctx.getTaskGraph().getNodes()) {
-            visit(order, node);
+        // It is assumed that the task graph is already sorted into
+        // topological order by the GraphBuilderImpl
+        for (Node node : ctx.getTaskGraph().getNodes()) {
+            int bestProc = 0;
+            int bestStartTime = Integer.MAX_VALUE;
+            for (int procNum = 0; procNum < ctx.getProcessorCount(); procNum++) {
+                int dataReadyTime = 0;
+                for (Map.Entry<Node, Integer> parentEntry : node.getIncomingEdges().entrySet()) {
+                    ScheduledTask parentTask = scheduledTaskMap.get(parentEntry.getKey());
+                    if (parentTask.getProcessorId() != procNum) {
+                        dataReadyTime = Math.max(dataReadyTime, parentTask.getFinishTime() + parentEntry.getValue());
+                    } else {
+                        dataReadyTime = Math.max(dataReadyTime, parentTask.getFinishTime());
+                    }
+                }
+                int startTime = Math.max(earliestProcessorFree[procNum], dataReadyTime);
+                if (startTime < bestStartTime) {
+                    bestStartTime = startTime;
+                    bestProc = procNum;
+                }
+            }
+            scheduledTaskMap.put(node, new ScheduledTask(bestProc, bestStartTime, node));
+            earliestProcessorFree[bestProc] += bestStartTime + node.getWeight();
         }
 
-        Set<ScheduledTask> output = new HashSet<>();
-        int startTime = 0;
-        for(Node node : order) {
-            output.add(new ScheduledTask(1, startTime, node));
-            startTime += node.getWeight();
-        }
-
-        return new Schedule(output);
-    }
-
-    private void visit(LinkedHashSet<Node> order, Node toVisit) {
-        if(order.contains(toVisit)) {
-            return;
-        }
-
-        for(Node node : toVisit.getIncomingEdges().keySet()) {
-            visit(order, node);
-        }
-
-        order.add(toVisit);
+        return new Schedule(new HashSet<>(scheduledTaskMap.values()));
     }
 }
