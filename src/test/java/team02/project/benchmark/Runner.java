@@ -1,6 +1,8 @@
 package team02.project.benchmark;
 
+import jdk.nashorn.internal.objects.NativeInt8Array;
 import lombok.var;
+import team02.project.algorithm.AStarAlgorithm;
 import team02.project.algorithm.SequentialBranchBoundAlgorithm;
 import team02.project.algorithm.ParallelBranchAndBound;
 import team02.project.algorithm.SchedulingAlgorithm;
@@ -15,7 +17,7 @@ public class Runner {
 
         System.out.println("Starting...");
 
-        var loader = new TestGraphLoader("/testPackages/all10nodes.txt");
+        var loader = new TestGraphLoader("/testPackages/all10nodes.csv");
 
         var benchmark = new AlgorithmBenchmark(() -> new SequentialBranchBoundAlgorithm(new AOSolutionSpace()));
 
