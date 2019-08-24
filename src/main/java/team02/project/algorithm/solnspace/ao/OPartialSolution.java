@@ -7,6 +7,10 @@ import team02.project.graph.Node;
 
 import java.util.*;
 
+/**
+ * Represents a node in the ordering part of the AO solution space. These nodes are found in the lower part of
+ * the solution space tree. The ordering phase takes a created allocation and orders the tasks on the processors.
+ */
 public class OPartialSolution implements PartialSolution {
 
     private final SchedulingContext context;
@@ -17,6 +21,11 @@ public class OPartialSolution implements PartialSolution {
     private final int depth;
     private final int processor;
 
+    /**
+     * In the interest of performance, we keep track of which tasks have been ordered and are ready to
+     * order in a set of bitfields, one per processor. Bit n is 1 if the node with index n is ordered
+     * or ready to be ordered respectively.
+     */
     private final long orderedBits;
     private final long readyToOrderBits;
 
@@ -38,11 +47,20 @@ public class OPartialSolution implements PartialSolution {
         this.heuristicCost = heuristicCost;
     }
 
+    /**
+     * Creates an empty OPartialSolution from the given parameters, including the given allocation.
+     * @param ctx the context for which to solve the scheduling problem
+     * @param allocation the allocation for which orderings should be created
+     * @return an empty OPartialSolution corresponding to the given allocation
+     */
     public static OPartialSolution makeEmpty(SchedulingContext ctx, Allocation allocation) {
+        Objects.requireNonNull(ctx);
+        Objects.requireNonNull(allocation);
+
         long orderedBits = 0L;
         long readyToOrderBits = 0L;
 
-        // add stuff to readyToOrder (kinda pricy oops)
+        // find tasks that are ready initially and
         for(int i = 0; i < ctx.getProcessorCount(); ++i) {
             for (Node node : allocation.getTasksFor(i)) {
                 if (isTaskReadyToOrder(node, orderedBits, allocation.getTasksFor(i))) {
@@ -60,24 +78,31 @@ public class OPartialSolution implements PartialSolution {
         return Math.max(allocation.getEstimatedFinishTime(), heuristicCost);
     }
 
-
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Set<PartialSolution> expand() {
         if(isOrderingComplete()) {
-            Set<PartialSolution> output = new HashSet<>();
-            output.add(new AOCompleteSolution(context, this));
-            return output;
+            // if complete, return AOCompleteSolution which can calculate the completed schedule.
+            return Collections.singleton(new AOCompleteSolution(this));
         }
 
         Set<PartialSolution> output = expandProcessor(processor);
 
         if(output.isEmpty()) {
+            // no tasks left on that processor, on to the next one.
             output = expandProcessor(processor + 1);
         }
 
         return output;
     }
 
+    /**
+     * Adds tasks that can be ordered on a particular processor
+     * @param processorNumber the processor
+     * @return OPartialSolutions with one more task ordered on the given processor. May be none.
+     */
     private Set<PartialSolution> expandProcessor(int processorNumber) {
         Set<PartialSolution> output = new HashSet<>();
 
@@ -85,10 +110,10 @@ public class OPartialSolution implements PartialSolution {
         Map<Node, Integer> historicEstimatedStartTimes = new HashMap<>();
 
         // The sum of weights already ordered on each processor
-        int[] totalOrdered = new int[context.getProcessorCount()];
+        int[] totalOrdered = new int[getContext().getProcessorCount()];
 
         // Latest finish time for each processor
-        int[] latestFinishTime = new int[context.getProcessorCount()];
+        int[] latestFinishTime = new int[getContext().getProcessorCount()];
 
         calculateHeuristicInfo(totalOrdered, latestFinishTime, historicEstimatedStartTimes);
 
@@ -202,9 +227,15 @@ public class OPartialSolution implements PartialSolution {
         return output;
     }
 
+    /**
+     * Helper to calculate info used for the heuristics
+     * @param totalOrdered Total ordered for each processor (output; this array will be written to)
+     * @param latestFinishTime Latest finish time for each processor (output; this array will be written to)
+     * @param historicEstimatedStartTimes Historic estimated start time map (output; this map will be written to)
+     */
     private void calculateHeuristicInfo(int[] totalOrdered, int[] latestFinishTime, Map<Node, Integer> historicEstimatedStartTimes) {
         OPartialSolution prev = this;
-        while (!prev.isEmpty()) {
+        while (!prev.isEmptyOrdering()) {
             historicEstimatedStartTimes.put(prev.getTask(), prev.getEstimatedStartTime());
             totalOrdered[prev.getProcessor()] += prev.getTask().getWeight();
             latestFinishTime[prev.getProcessor()] = Math.max(latestFinishTime[prev.getProcessor()],
@@ -213,14 +244,30 @@ public class OPartialSolution implements PartialSolution {
         }
     }
 
+    /**
+     * Creates a child OPartialSolution, placing the given node on the given processor
+     * @param node Node to order
+     * @param processorNumber zero-based index for processor
+     * @return Created OPartialSolution
+     */
     private OPartialSolution createChild(Node node, int processorNumber) {
-        int[] totalOrdered = new int[context.getProcessorCount()];
-        int[] latestFinishTime = new int[context.getProcessorCount()];
+        int[] totalOrdered = new int[getContext().getProcessorCount()];
+        int[] latestFinishTime = new int[getContext().getProcessorCount()];
         Map<Node, Integer> historicEstimatedStartTimes = new HashMap<>();
         calculateHeuristicInfo(totalOrdered, latestFinishTime, historicEstimatedStartTimes);
         return createChild(node, processorNumber, totalOrdered, latestFinishTime, historicEstimatedStartTimes);
     }
 
+    /**
+     * Creates a child OPartialSolution, placing the given node on the given processor.
+     * @param node Node to order
+     * @param processorNumber zero-based index for processor
+     * @param totalOrdered precalculated totalOrdered values
+     * @param latestFinishTime precalculated latest finish time values
+     * @param historicEstimatedStartTimes precalculated historic estimated start times
+     * @see #calculateHeuristicInfo(int[], int[], Map)
+     * @return Created OPartialSolution
+     */
     private OPartialSolution createChild(Node node, int processorNumber, int[] totalOrdered, int[] latestFinishTime,
                                          Map<Node, Integer> historicEstimatedStartTimes) {
         long newOrderedBits = orderedBits;
@@ -251,7 +298,7 @@ public class OPartialSolution implements PartialSolution {
         }
 
         int maxOrderedLoad = 0;
-        for (int i = 0; i < context.getProcessorCount(); i++) {
+        for (int i = 0; i < getContext().getProcessorCount(); i++) {
             maxOrderedLoad = Math.max(maxOrderedLoad,
                     latestFinishTime[i] + (allocation.getLoadFor(i) - totalOrdered[i]));
         }
@@ -260,7 +307,7 @@ public class OPartialSolution implements PartialSolution {
         int newEstStartTime = Math.max(latestFinishTime[processorNumber], newDataReadyTime);
 
         return new OPartialSolution(
-                context,
+                getContext(),
                 allocation,
                 this,
                 node,
@@ -273,6 +320,13 @@ public class OPartialSolution implements PartialSolution {
         );
     }
 
+    /**
+     * Helper method to determine whether the given task is ready to be ordered
+     * @param task Task to test
+     * @param orderedBits bits of ordered tasks on this processor
+     * @param allocatedTasks set of tasks allocated to this processor
+     * @return true if the task is a candidate for ordering
+     */
     private static boolean isTaskReadyToOrder(Node task, long orderedBits, Set<Node> allocatedTasks) {
         for(Node dependency : task.getDependencies()) {
             // if this dependency is on this processor and it hasn't been ordered yet then we can't
@@ -286,41 +340,82 @@ public class OPartialSolution implements PartialSolution {
         return true;
     }
 
+    /**
+     * Determine if this OPartialSolution represents an empty ordering where no tasks have been ordered yet.
+     * @return true if this is an empty ordering
+     */
     public boolean isEmptyOrdering() {
         return parent == null;
     }
 
+    /**
+     * Find the parent of this OPartialSolution, if any
+     * @return the parent OPartialSolution, or null if this represents an empty ordering
+     */
     public OPartialSolution getParent() {
         return parent;
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * Even though an OPartialSolution can represent a complete ordering, the validation of it is left
+     * to {@link AOCompleteSolution}. Hence, false is always returned so that algorithms will call {@link #expand()}.
+     * If the ordering is complete, {@link #expand()} will return {@link AOCompleteSolution} for which isComplete
+     * may return true.
+     *
+     * @return false always
+     */
     @Override
     public boolean isComplete() {
         return false;
     }
 
-    public boolean isEmpty() {
-        return this.parent == null;
-    }
-
+    /**
+     * Determines whether this is a complete ordering, i.e. an ordering where all tasks have been ordered.
+     * @return true if the ordering is complete, otherwise false.
+     */
     public boolean isOrderingComplete() {
-        return depth == context.getTaskGraph().getNodes().size();
+        return depth == getContext().getTaskGraph().getNodes().size();
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * An OPartialSolution cannot make a complete ordering as {@link #isComplete()} always returns false.
+     *
+     * @throws UnsupportedOperationException always
+     */
     @Override
     public Schedule makeComplete() {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * The task being ordered by this OPartialSolution
+     * @return task being ordered
+     */
     public Node getTask() {
         return task;
     }
 
+    /**
+     * Allocated processor of the task being ordered by this OPartialSolution
+     * @return the allocated processor's zero-based index
+     */
     public int getProcessor() {
         return processor;
     }
 
-    public int getEstimatedStartTime() {
+    private int getEstimatedStartTime() {
         return estimatedStartTime;
+    }
+
+    /**
+     * The SchedulingContext associated with the solution space this OPartialSolution belongs to
+     * @return associated SchedulingContext
+     */
+    public SchedulingContext getContext() {
+        return context;
     }
 }

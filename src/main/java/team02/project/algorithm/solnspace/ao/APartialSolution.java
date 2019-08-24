@@ -5,20 +5,27 @@ import team02.project.algorithm.SchedulingContext;
 import team02.project.algorithm.solnspace.PartialSolution;
 import team02.project.graph.Node;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
- * Allocation
+ * The allocation part of the solution space. This represents the top part of the solution space tree, where tasks are
+ * allocated to a processor. The allocation phase of the solution space ends once all tasks have been allocated.
+ *
+ * The nature of the expand method in APartialSolution is such that no two generated allocations are duplicates, meaning
+ * they are the same schedule but with the processor numbers switched around. This is done by treating the collection
+ * of allocations as a set: allocations are made without respect to the ordering of the processors.
  */
 public class APartialSolution implements PartialSolution {
+
+    // attributes relating to this allocation
+
     private final SchedulingContext context;
     private final int processor;
     private final Node task;
     private final int depth; // also used to index next node to schedule
     private final APartialSolution parent;
+
+    // attributes relating to heuristic calculation
 
     private final int[] loads;
     private final int topLevelAllocated;
@@ -29,6 +36,11 @@ public class APartialSolution implements PartialSolution {
      */
     private int processorsWithTasks;
 
+    /**
+     * Create a new empty APartialSolution for the given context.
+     * @param context Context for which to create the partial solution
+     * @return the created partial solution
+     */
     public static APartialSolution makeEmpty(SchedulingContext context) {
         return new APartialSolution(context, null, null, 0, 0, 0,
                 new int[context.getProcessorCount()], 0, 0 );
@@ -53,22 +65,28 @@ public class APartialSolution implements PartialSolution {
         return Math.max(getMaxLoad(), criticalPathAllocated);
     }
 
+    /**
+     * @return the calculated maxLoad heuristic
+     */
     private int getMaxLoad() {
         int max = 0;
-        for(int i = 0; i < loads.length; ++i) {
-            if(max < loads[i]) {
-                max = loads[i];
+        for (int load : loads) {
+            if (max < load) {
+                max = load;
             }
         }
         return max;
     }
 
+    /**
+     * Allocates the next task onto a processor.
+     * {@inheritDoc}
+     */
     @Override
     public Set<PartialSolution> expand() {
+        // if we are done with the allocation, then we should start with the ordering
         if (isCompleteAllocation()) {
-            Set<PartialSolution> output = new HashSet<>();
-            output.add(OPartialSolution.makeEmpty(context, Allocation.fromAPartialSolution(this)));
-            return output;
+            return Collections.singleton(OPartialSolution.makeEmpty(context, Allocation.fromAPartialSolution(this)));
         }
 
         Set<PartialSolution> output = new HashSet<>();
@@ -143,63 +161,86 @@ public class APartialSolution implements PartialSolution {
         return output;
     }
 
-    public int getProcessorFor(Node task) {
-        APartialSolution current = this;
-        while (!current.isEmpty()) {
-            if (current.getTask().equals(task)) {
-                return current.getProcessor();
-            }
-            current = current.getParent();
-        }
-
-        return -1;
-    }
-
-
+    /**
+     * Determines if this allocation represents an empty allocation where no tasks have been allocated.
+     * @return true if the allocation is empty; false otherwise.
+     */
     public boolean isEmpty() {
         return getParent() == null;
     }
 
-    private boolean isCompleteAllocation() {
+    /**
+     * Determines whether this allocation represents a complete allocation where all tasks have been allocated processors.
+     *
+     * If the allocation is complete, calling {@link #expand()} will move the solution space into the ordering phase,
+     * resulting in the output of {@link OPartialSolution} objects.
+     *
+     * @return true if this allocation is complete, otherwise false.
+     */
+    public boolean isCompleteAllocation() {
         return getDepth() == getContext().getTaskGraph().getNodes().size();
     }
 
+    /**
+     * {@inheritDoc}
+     * @return false always: an APartialSolution will never represent a complete schedule since allocations need to be ordered first.
+     */
     @Override
     public boolean isComplete() {
         return false;
     }
 
+    /**
+     * This method is not supported by APartialSolution since no APartialSolution is a complete solution.
+     * @throws UnsupportedOperationException always
+     */
     @Override
     public Schedule makeComplete() {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * @return the SchedulingContext associated with this APartialSolution.
+     */
     public SchedulingContext getContext() {
         return context;
     }
 
+    /**
+     * The zero-based index of the processor that the task allocated on this level of the APartialSolution was allocated.
+     * @return the index of the task's processor.
+     */
     public int getProcessor() {
         return processor;
     }
 
+    /**
+     * The task that was allocated by this level of the APartialSolution
+     * @return the allocated task
+     */
     public Node getTask() {
         return task;
     }
 
-    public int getDepth() {
+    /**
+     * The current depth, representing the number of tasks that have so far been allocated, including this one.
+     * @return The current depth. This value will be zero if {@link #isEmpty()} returns false.
+     */
+    private int getDepth() {
         return depth;
     }
 
+    /**
+     * @return The parent APartialSolution in the solution space tree, or null if this represents the root.
+     */
     public APartialSolution getParent() {
         return parent;
     }
 
+    /**
+     * @return The top level of the allocated node with respect to the allocation so far.
+     */
     public int getTopLevelAllocated() {
         return topLevelAllocated;
     }
-
-    public int getCriticalPathAllocated() {
-        return criticalPathAllocated;
-    }
-
 }
