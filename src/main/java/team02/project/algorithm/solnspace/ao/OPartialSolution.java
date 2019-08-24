@@ -107,7 +107,7 @@ public class OPartialSolution implements PartialSolution {
         Set<PartialSolution> output = new HashSet<>();
 
         // Build a table of all the previously calculated estimated start time
-        Map<Node, Integer> historicEstimatedStartTimes = new HashMap<>();
+        int[] historicEstimatedStartTimes = new int[getContext().getTaskGraph().getNodes().size()];
 
         // The sum of weights already ordered on each processor
         int[] totalOrdered = new int[getContext().getProcessorCount()];
@@ -233,10 +233,10 @@ public class OPartialSolution implements PartialSolution {
      * @param latestFinishTime Latest finish time for each processor (output; this array will be written to)
      * @param historicEstimatedStartTimes Historic estimated start time map (output; this map will be written to)
      */
-    private void calculateHeuristicInfo(int[] totalOrdered, int[] latestFinishTime, Map<Node, Integer> historicEstimatedStartTimes) {
+    private void calculateHeuristicInfo(int[] totalOrdered, int[] latestFinishTime, int[] historicEstimatedStartTimes) {
         OPartialSolution prev = this;
         while (!prev.isEmptyOrdering()) {
-            historicEstimatedStartTimes.put(prev.getTask(), prev.getEstimatedStartTime());
+            historicEstimatedStartTimes[prev.getTask().getIndex()] = prev.getEstimatedStartTime();
             totalOrdered[prev.getProcessor()] += prev.getTask().getWeight();
             latestFinishTime[prev.getProcessor()] = Math.max(latestFinishTime[prev.getProcessor()],
                     prev.getEstimatedStartTime() + prev.getTask().getWeight());
@@ -253,7 +253,7 @@ public class OPartialSolution implements PartialSolution {
     private OPartialSolution createChild(Node node, int processorNumber) {
         int[] totalOrdered = new int[getContext().getProcessorCount()];
         int[] latestFinishTime = new int[getContext().getProcessorCount()];
-        Map<Node, Integer> historicEstimatedStartTimes = new HashMap<>();
+        int[] historicEstimatedStartTimes = new int[getContext().getTaskGraph().getNodes().size()];
         calculateHeuristicInfo(totalOrdered, latestFinishTime, historicEstimatedStartTimes);
         return createChild(node, processorNumber, totalOrdered, latestFinishTime, historicEstimatedStartTimes);
     }
@@ -265,11 +265,11 @@ public class OPartialSolution implements PartialSolution {
      * @param totalOrdered precalculated totalOrdered values
      * @param latestFinishTime precalculated latest finish time values
      * @param historicEstimatedStartTimes precalculated historic estimated start times
-     * @see #calculateHeuristicInfo(int[], int[], Map)
+     * @see #calculateHeuristicInfo(int[], int[], int[])
      * @return Created OPartialSolution
      */
     private OPartialSolution createChild(Node node, int processorNumber, int[] totalOrdered, int[] latestFinishTime,
-                                         Map<Node, Integer> historicEstimatedStartTimes) {
+                                         int[] historicEstimatedStartTimes) {
         long newOrderedBits = orderedBits;
         long newReadyBits = readyToOrderBits;
         newOrderedBits |= 1 << node.getIndex();
@@ -286,8 +286,8 @@ public class OPartialSolution implements PartialSolution {
         int newDataReadyTime = 0;
         for (Map.Entry<Node, Integer> pred : node.getIncomingEdges().entrySet()) {
             int predFinishTime;
-            if (historicEstimatedStartTimes.containsKey(pred.getKey())) {
-                predFinishTime = historicEstimatedStartTimes.get(pred.getKey()) + pred.getKey().getWeight();
+            if (historicEstimatedStartTimes[pred.getKey().getIndex()] != 0) {
+                predFinishTime = historicEstimatedStartTimes[pred.getKey().getIndex()] + pred.getKey().getWeight();
             } else {
                 predFinishTime = allocation.getTopLevelFor(pred.getKey());
             }

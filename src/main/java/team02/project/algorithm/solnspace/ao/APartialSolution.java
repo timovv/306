@@ -98,12 +98,12 @@ public class APartialSolution implements PartialSolution {
         Map<Node, Integer> processorLookupTable = new HashMap<>();
 
         // Contains the TLA values of all allocated Nodes
-        Map<Node, Integer> tla = new HashMap<>();
+        int[] tla = new int[context.getTaskGraph().getNodes().size()];
 
         APartialSolution current = this;
         while (!current.isEmpty()) {
             processorLookupTable.put(current.getTask(), current.getProcessor());
-            tla.put(current.getTask(), current.getTopLevelAllocated());
+            tla[current.getTask().getIndex()] = current.getTopLevelAllocated();
             current = current.getParent();
         }
 
@@ -116,7 +116,7 @@ public class APartialSolution implements PartialSolution {
             int newTopLevelAllocated = 0;
             for (Map.Entry<Node, Integer> pred : next.getIncomingEdges().entrySet()) {
                 if (!processorLookupTable.getOrDefault(pred.getKey(), i).equals(i)) {
-                    newTopLevelAllocated = Math.max(newTopLevelAllocated, tla.get(pred.getKey()) + pred.getValue());
+                    newTopLevelAllocated = Math.max(newTopLevelAllocated, tla[pred.getKey().getIndex()] + pred.getValue());
                 } else {
                     newTopLevelAllocated =  Math.max(newTopLevelAllocated, pred.getKey().getTopLevel());
                 }
@@ -143,7 +143,7 @@ public class APartialSolution implements PartialSolution {
 
             int newTopLevelAllocated = 0;
             for (Map.Entry<Node, Integer> pred : next.getIncomingEdges().entrySet()) {
-                newTopLevelAllocated = Math.max(newTopLevelAllocated, tla.get(pred.getKey()) + pred.getValue());
+                newTopLevelAllocated = Math.max(newTopLevelAllocated, tla[pred.getKey().getIndex()] + pred.getValue());
             }
 
             output.add(new APartialSolution(

@@ -21,13 +21,13 @@ public class Allocation {
     private final List<Set<Node>> tasks;
 
     private final int[] loadsPerProcessor;
-    private final Map<Node, Integer> processors;
-    private final Map<Node, Integer> topLevelAllocated;
-    private final Map<Node, Integer> bottomLevelAllocated;
+    private final int[] processors;
+    private final int[] topLevelAllocated;
+    private final int[] bottomLevelAllocated;
     private final int estimatedCost;
 
-    private Allocation(List<Set<Node>> tasks, int[] loadsPerProcessor,  Map<Node, Integer> processors,
-                       Map<Node, Integer> topLevelAllocated, Map<Node, Integer> bottomLevelAllocated, int estimatedCost) {
+    private Allocation(List<Set<Node>> tasks, int[] loadsPerProcessor, int[] processors,
+                       int[] topLevelAllocated, int[] bottomLevelAllocated, int estimatedCost) {
         this.tasks = tasks;
         this.loadsPerProcessor = loadsPerProcessor;
         this.processors = processors;
@@ -53,16 +53,17 @@ public class Allocation {
             tasks.add(new HashSet<>());
         }
 
-        Map<Node, Integer> topLevelAllocated = new HashMap<>();
-        Map<Node, Integer> processorLookup = new HashMap<>();
+        int[] topLevelAllocated = new int[ctx.getTaskGraph().getNodes().size()];
+        int[] processorLookup = new int[ctx.getTaskGraph().getNodes().size()];
 
         // go through allocation steps and allocate them while also calculating allocated top level for heuristics
         APartialSolution current = alloc;
         while(!current.isEmpty()) {
             tasks.get(current.getProcessor()).add(current.getTask());
             loadsPerProcessor[current.getProcessor()] += current.getTask().getWeight();
-            topLevelAllocated.put(current.getTask(), current.getTopLevelAllocated());
-            processorLookup.put(current.getTask(), current.getProcessor());
+            topLevelAllocated[current.getTask().getIndex()] = current.getTopLevelAllocated();
+
+            processorLookup[current.getTask().getIndex()] = current.getProcessor();
             current = current.getParent();
         }
 
@@ -71,14 +72,14 @@ public class Allocation {
                 .collect(Collectors.toCollection(LinkedList::new));
 
         // calculating allocated bottom level, used for ordering heuristics
-        Map<Node, Integer> bottomLevelAllocated = new HashMap<>();
+        int[] bottomLevelAllocated = new int[ctx.getTaskGraph().getNodes().size()];
         while(!queue.isEmpty()){
             Node node = queue.poll();
 
             int bottomLevel = node.getOutgoingEdges().entrySet()
                     .stream()
                     .mapToInt(childEntry -> {
-                        if (processorLookup.get(node).equals(processorLookup.get(childEntry.getKey()))) {
+                        if(processorLookup[node.getIndex()] == processorLookup[childEntry.getKey().getIndex()]) {
                             return childEntry.getKey().getBottomLevel();
                         } else {
                             return childEntry.getKey().getBottomLevel() + childEntry.getValue();
@@ -87,7 +88,7 @@ public class Allocation {
                     .max()
                     .orElse(0) + node.getWeight();
 
-            bottomLevelAllocated.put(node, bottomLevel);
+            bottomLevelAllocated[node.getIndex()] = bottomLevel;
 
             for(val node2 : node.getIncomingEdges().keySet()) {
                 queue.offer(node2);
@@ -112,7 +113,7 @@ public class Allocation {
      * @return Top level
      */
     public int getTopLevelFor(Node task) {
-        return topLevelAllocated.get(task);
+        return topLevelAllocated[task.getIndex()];
     }
 
     /**
@@ -121,7 +122,7 @@ public class Allocation {
      * @return Bottom level
      */
     public int getBottomLevelFor(Node task) {
-        return bottomLevelAllocated.get(task);
+        return bottomLevelAllocated[task.getIndex()];
     }
 
     /**
@@ -130,7 +131,7 @@ public class Allocation {
      * @return the zero-indexed number of the processor the input task is assigned to
      */
     public int getProcessorFor(Node task) {
-        return processors.get(task);
+        return processors[task.getIndex()];
     }
 
     public int getLoadFor(int processor) {
