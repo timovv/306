@@ -23,6 +23,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Stop;
+import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 import javafx.scene.text.TextFlow;
@@ -42,12 +43,16 @@ import java.util.Arrays;
 import java.util.Random;
 import java.util.Set;
 
+import static javafx.scene.paint.Color.rgb;
 import static team02.project.App.*;
 
 public class MainController {
 
     @FXML
     private VBox statsBox;
+
+    @FXML
+    private VBox rootVbox;
 
     @FXML
     private VBox memBox;
@@ -96,22 +101,26 @@ public class MainController {
         this.memoryTile.setValue(500);
         this.scheduleTile.setValue(200);
 
-
     }
 
     private void setUpMemoryTile() {
         this.memoryTile = TileBuilder.create().skinType(Tile.SkinType.BAR_GAUGE)
-                .title("Memory usage")
                 .unit("MB")
                 .maxValue(Runtime.getRuntime().maxMemory() / (1024 * 1024))
                 .threshold(Runtime.getRuntime().maxMemory() * 0.8 / (1024 * 1024))
-                .gradientStops(new Stop(0, Bright.GREEN),
+                .gradientStops(new Stop(0, rgb(244,160,0)),
                         new Stop(0.8, Bright.RED),
                         new Stop(1.0, Dark.RED))
                 .animated(true)
                 .decimals(0)
                 .strokeWithGradient(true)
                 .thresholdVisible(true)
+                .backgroundColor(Color.WHITE)
+                .valueColor(rgb(244,160,0))
+                .unitColor(rgb(244,160,0))
+                .barBackgroundColor(rgb(242, 242, 242))
+                .thresholdColor(rgb(128, 84, 1))
+                .needleColor(rgb(244,160,0))
                 .build();
 
         memBox.getChildren().addAll(buildFlowGridPane(this.memoryTile));
@@ -119,11 +128,12 @@ public class MainController {
 
     private void setUpAllocationTile() {
         this.allocationTile = TileBuilder.create().skinType(Tile.SkinType.SMOOTH_AREA_CHART)
-                .title("Feasible Allocations")
                 .chartData(new ChartData(0), new ChartData(0))
                 .animated(false)
                 .smoothing(true)
                 .minWidth(387)
+                .backgroundColor(Color.WHITE)
+                .valueColor(rgb(219,68,55))
                 .build();
 
         allocBox.getChildren().addAll(buildFlowGridPane(this.allocationTile));
@@ -131,11 +141,12 @@ public class MainController {
 
     private void setUpOrderTile() {
         this.orderTile = TileBuilder.create().skinType(Tile.SkinType.SMOOTH_AREA_CHART)
-                .title("Feasible Orderings")
                 .chartData(new ChartData(0), new ChartData(0))
                 .animated(false)
                 .smoothing(true)
                 .minWidth(387)
+                .backgroundColor(Color.WHITE)
+                .valueColor(rgb(15,157,88))
                 .build();
 
         orderBox.getChildren().addAll(buildFlowGridPane(this.orderTile));
@@ -143,10 +154,11 @@ public class MainController {
 
     private void setUpScheduleTile() {
         this.scheduleTile =  TileBuilder.create().skinType(Tile.SkinType.NUMBER)
-                .title("Schedules Per Second")
                 .titleAlignment(TextAlignment.CENTER)
                 .animated(true)
                 .decimals(0)
+                .backgroundColor(Color.WHITE)
+                .valueColor(rgb(66,133,244))
                 .build();
 
         schedulesBox.getChildren().addAll(buildFlowGridPane(this.scheduleTile));

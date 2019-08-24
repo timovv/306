@@ -4,6 +4,7 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import team02.project.App;
 import team02.project.algorithm.Schedule;
@@ -29,6 +30,7 @@ public class FXApp extends Application {
             loader.setController(mainController);
             Parent root = loader.load();
 
+            // initialise everything that needs to be done between attaching controller to fxml and actually showing app
             mainController.init();
 
             primaryStage.setTitle("Team-02");
