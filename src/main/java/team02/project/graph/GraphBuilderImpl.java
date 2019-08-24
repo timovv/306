@@ -9,6 +9,7 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.List;
 
 public class GraphBuilderImpl implements GraphBuilder {
     private MutableGraph wip = new MutableGraph();
@@ -18,13 +19,15 @@ public class GraphBuilderImpl implements GraphBuilder {
 
     @Override
     public Graph build() {
+//        fixIdentical();
+
         built = true;
 
         LinkedHashSet<MutableNode> order = new LinkedHashSet<>();
         LinkedHashSet<MutableNode> reverseOrder = new LinkedHashSet<>();
 
-        for(MutableNode node : wip.getNodes()) {
-            topologicalVisit(order,  node);
+        for (MutableNode node : wip.getNodes()) {
+            topologicalVisit(order, node);
             reverseTopologicalVisit(reverseOrder, node);
         }
 
@@ -34,6 +37,32 @@ public class GraphBuilderImpl implements GraphBuilder {
         calculateTopLevels();
         return wip;
     }
+
+    private void fixIdentical() {
+        List<MutableNode> uncheckedNodes = new ArrayList<>(wip.getNodes());
+        ArrayList<ArrayList<Node>> identicalTasks = new ArrayList<>();
+
+        while (uncheckedNodes.size() != 0) {
+            MutableNode newNode = uncheckedNodes.get(0);
+            ArrayList<Node> current = new ArrayList<>();
+            for (Node n : uncheckedNodes) {
+                if (n.isIdentical(newNode)) {
+                    current.add(n);
+                }
+                if (current.size() > 1) {
+                    identicalTasks.add(current);
+                }
+            }
+            uncheckedNodes.removeAll(current);
+        }
+
+        for (ArrayList<Node> identicalTask : identicalTasks) {
+            for (int i = 0; i < identicalTask.size() - 1; i++) {
+                addEdge(identicalTask.get(i).getId(), identicalTask.get(i + 1).getId(), 0);
+            }
+        }
+    }
+
 
     /**
      * Visits each Node, records the topological order and set their depedents
@@ -60,14 +89,14 @@ public class GraphBuilderImpl implements GraphBuilder {
     }
 
     private Set<Node> reverseTopologicalVisit(LinkedHashSet<MutableNode> reverseOrder, MutableNode toVisit) {
-        if(reverseOrder.contains(toVisit)) {
+        if (reverseOrder.contains(toVisit)) {
             return toVisit.getDependents();
         }
 
         Set<Node> dependents = new HashSet<>();
 
-        for(Node node : toVisit.getOutgoingEdges().keySet()) {
-            dependents.addAll(reverseTopologicalVisit(reverseOrder, (MutableNode)node));
+        for (Node node : toVisit.getOutgoingEdges().keySet()) {
+            dependents.addAll(reverseTopologicalVisit(reverseOrder, (MutableNode) node));
             dependents.add(node);
         }
 
@@ -82,7 +111,7 @@ public class GraphBuilderImpl implements GraphBuilder {
                 .filter(x -> x.getOutgoingEdges().isEmpty())
                 .collect(Collectors.toCollection(LinkedList::new));
 
-        while(!queue.isEmpty()){
+        while (!queue.isEmpty()) {
             val node = queue.poll();
             val bottomLevel = node.getOutgoingEdges().keySet()
                     .stream()
@@ -91,8 +120,8 @@ public class GraphBuilderImpl implements GraphBuilder {
                     .orElse(0) + node.getWeight();
             node.setBottomLevel(bottomLevel);
 
-            for(val node2 : node.getIncomingEdges().keySet()) {
-                queue.offer((MutableNode)node2);
+            for (val node2 : node.getIncomingEdges().keySet()) {
+                queue.offer((MutableNode) node2);
             }
         }
     }
@@ -102,7 +131,7 @@ public class GraphBuilderImpl implements GraphBuilder {
                 .filter(x -> x.getIncomingEdges().isEmpty())
                 .collect(Collectors.toCollection(LinkedList::new));
 
-        while(!queue.isEmpty()){
+        while (!queue.isEmpty()) {
             val node = queue.poll();
             val topLevel = node.getIncomingEdges().keySet()
                     .stream()
@@ -111,14 +140,14 @@ public class GraphBuilderImpl implements GraphBuilder {
                     .orElse(0) + node.getWeight();
             node.setTopLevel(topLevel);
 
-            for(val node2 : node.getOutgoingEdges().keySet()) {
-                queue.offer((MutableNode)node2);
+            for (val node2 : node.getOutgoingEdges().keySet()) {
+                queue.offer((MutableNode) node2);
             }
         }
     }
 
     private void throwIfBuilt() {
-        if(built) {
+        if (built) {
             throw new RuntimeException("Can't update; graph has been already built!");
         }
     }
@@ -141,7 +170,7 @@ public class GraphBuilderImpl implements GraphBuilder {
         val head = wip.getNode(toId);
         val tail = wip.getNode(fromId);
 
-        if(head == null || tail == null) {
+        if (head == null || tail == null) {
             throw new RuntimeException("Node(s) do not exist for edge");
         }
 

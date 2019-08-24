@@ -39,4 +39,9 @@ public class MutableNode implements Node {
     public String toString() {
         return "MutableNode{id=" + id + ",weight=" + weight + "}";
     }
+
+    @Override
+    public boolean isIdentical(MutableNode other) {
+        return (other.getWeight() == weight && other.incomingEdges.equals(incomingEdges) && other.outgoingEdges.equals(outgoingEdges));
+    }
 }

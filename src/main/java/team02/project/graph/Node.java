@@ -10,6 +10,7 @@ public interface Node {
      */
     String getId();
 
+    boolean isIdentical(MutableNode other);
     /**
      * Get weight of {@link Node}
      * @return The weight of current node
