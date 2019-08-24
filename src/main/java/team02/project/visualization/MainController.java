@@ -80,7 +80,9 @@ public class MainController {
     private Tile orderTile;
     private Tile scheduleTile;
     private GanttChart<Number,String> chart;
+    private Timeline timerHandler;
 
+    private int numSchedules;
     private double startTime;
     private double currentTime;
     private double finishTime;
@@ -95,11 +97,16 @@ public class MainController {
         setUpScheduleTile();
         setUpGanttBox();
         setUpStatsBox();
-        setUpTimer();
 
-        //TODO Remove me
-        this.memoryTile.setValue(500);
-        this.scheduleTile.setValue(200);
+        // monitor and update view of memory on another thread
+        Timeline memoryHandler = new Timeline(new KeyFrame(Duration.seconds(1), event -> {
+            memoryTile.setValue(Runtime.getRuntime().totalMemory()/ (1024 * 1024));
+        }));
+        memoryHandler.setCycleCount(Timeline.INDEFINITE);
+        memoryHandler.play();
+
+        // initialize the value in order for setValue
+        memoryTile.setValue(0);
 
     }
 
@@ -124,6 +131,7 @@ public class MainController {
                 .build();
 
         memBox.getChildren().addAll(buildFlowGridPane(this.memoryTile));
+
     }
 
     private void setUpAllocationTile() {
@@ -164,6 +172,11 @@ public class MainController {
         schedulesBox.getChildren().addAll(buildFlowGridPane(this.scheduleTile));
     }
 
+    private void incrementNumSchedules(){
+        numSchedules++;
+        schedCreatedText.setText(String.valueOf(numSchedules));
+    }
+
     private FlowGridPane buildFlowGridPane(Tile tile) {
         return new FlowGridPane(1, 1, tile);
     }
@@ -181,10 +194,10 @@ public class MainController {
         outGraphFlow.getChildren().add(new Text(outputString));
     }
 
-    private void setUpTimer(){
+    private void startTimer(){
 
         startTime=System.currentTimeMillis();
-        Timeline timerHandler = new Timeline(new KeyFrame(Duration.seconds(0.05), new EventHandler<ActionEvent>() {
+        timerHandler = new Timeline(new KeyFrame(Duration.seconds(0.05), new EventHandler<ActionEvent>() {
 
             @Override
             public void handle(ActionEvent event) {
@@ -194,6 +207,10 @@ public class MainController {
         }));
         timerHandler.setCycleCount(Timeline.INDEFINITE);
         timerHandler.play();
+    }
+
+    private void stopTimer(){
+        timerHandler.stop();
     }
 
 
