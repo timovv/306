@@ -100,96 +100,96 @@ public class OPartialSolution implements PartialSolution {
             current.expand();
         }
 
-        // Check for fixed task order
-        // 1. Same parent and child (or no parent/child)
-        Node commonParent = null, commonChild = null;
-        boolean canFixOrder = false;
-        outer:
-        for(Node node : allocation.getTasksFor(processorNumber)) {
-            if ((readyToOrderBits[processorNumber] & (1L << node.getIndex())) == 0) {
-                continue;
-            }
-
-            canFixOrder = true;
-
-            if (node.getIncomingEdges().size() > 1 || node.getOutgoingEdges().size() > 1) {
-                canFixOrder = false;
-                break;
-            }
-
-            // will iterate at most once.
-            // -- checking for same parent
-            for (Node parent : node.getIncomingEdges().keySet()) {
-                if (commonParent == null) {
-                    commonParent = parent;
-                }
-
-                if (!commonParent.equals(parent)) {
-                    canFixOrder = false;
-                    break outer;
-                }
-            }
-
-            // -- checking for same child
-            for (Node child : node.getOutgoingEdges().keySet()) {
-                if (commonChild == null) {
-                    commonChild = child;
-                }
-
-                if (!commonChild.equals(child)) {
-                    canFixOrder = false;
-                    break outer;
-                }
-            }
-        }
-
-        if(canFixOrder && (readyToOrderBits[processorNumber] & (readyToOrderBits[processorNumber] - 1)) != 0) {
-            final Node commonParentFinal = commonParent;
-            final Node commonChildFinal = commonChild;
-
-            // 1. Place the tasks in fork order.
-            List<Node> nodes = new ArrayList<>();
-            for(Node node : allocation.getTasksFor(processorNumber)) {
-                if((readyToOrderBits[processorNumber] & (1L << node.getIndex())) != 0) {
-                    nodes.add(node);
-                }
-            }
-
-            // Order in fork order, resolving conflicts using join order.
-            // if the result is the join order, then we can perform the optimisation.
-            nodes.sort(Comparator.<Node>comparingInt(x -> {
-                Integer value = x.getIncomingEdges().get(commonParentFinal);
-                return value != null ? value : 0;
-            }).thenComparingInt(x -> {
-                Integer value = x.getOutgoingEdges().get(commonChildFinal);
-                // sorting this in descending order
-                return value != null ? -value : 0;
-            }));
-
-            // Check if this is also in join order.
-            boolean inJoinOrder = true;
-            int lastJoinValue = Integer.MAX_VALUE;
-            for(Node node : nodes) {
-                Integer value = node.getOutgoingEdges().get(commonChildFinal);
-                value = value == null ? 0 : value;
-                if(value > lastJoinValue) {
-                    inJoinOrder = false;
-                    break;
-                }
-
-                lastJoinValue = value;
-            }
-
-            if (inJoinOrder) {
-                // yes, we can perform the optimisation
-                OPartialSolution current = createChild(nodes.get(0), processorNumber);
-                for(int i = 1; i < nodes.size(); ++i) {
-                    current = current.createChild(nodes.get(i), processorNumber);
-                }
-
-                return Collections.singleton(current);
-            }
-        }
+//        // Check for fixed task order
+//        // 1. Same parent and child (or no parent/child)
+//        Node commonParent = null, commonChild = null;
+//        boolean canFixOrder = false;
+//        outer:
+//        for(Node node : allocation.getTasksFor(processorNumber)) {
+//            if ((readyToOrderBits[processorNumber] & (1L << node.getIndex())) == 0) {
+//                continue;
+//            }
+//
+//            canFixOrder = true;
+//
+//            if (node.getIncomingEdges().size() > 1 || node.getOutgoingEdges().size() > 1) {
+//                canFixOrder = false;
+//                break;
+//            }
+//
+//            // will iterate at most once.
+//            // -- checking for same parent
+//            for (Node parent : node.getIncomingEdges().keySet()) {
+//                if (commonParent == null) {
+//                    commonParent = parent;
+//                }
+//
+//                if (!commonParent.equals(parent)) {
+//                    canFixOrder = false;
+//                    break outer;
+//                }
+//            }
+//
+//            // -- checking for same child
+//            for (Node child : node.getOutgoingEdges().keySet()) {
+//                if (commonChild == null) {
+//                    commonChild = child;
+//                }
+//
+//                if (!commonChild.equals(child)) {
+//                    canFixOrder = false;
+//                    break outer;
+//                }
+//            }
+//        }
+//
+//        if(canFixOrder && (readyToOrderBits[processorNumber] & (readyToOrderBits[processorNumber] - 1)) != 0) {
+//            final Node commonParentFinal = commonParent;
+//            final Node commonChildFinal = commonChild;
+//
+//            // 1. Place the tasks in fork order.
+//            List<Node> nodes = new ArrayList<>();
+//            for(Node node : allocation.getTasksFor(processorNumber)) {
+//                if((readyToOrderBits[processorNumber] & (1L << node.getIndex())) != 0) {
+//                    nodes.add(node);
+//                }
+//            }
+//
+//            // Order in fork order, resolving conflicts using join order.
+//            // if the result is the join order, then we can perform the optimisation.
+//            nodes.sort(Comparator.<Node>comparingInt(x -> {
+//                Integer value = x.getIncomingEdges().get(commonParentFinal);
+//                return value != null ? value : 0;
+//            }).thenComparingInt(x -> {
+//                Integer value = x.getOutgoingEdges().get(commonChildFinal);
+//                // sorting this in descending order
+//                return value != null ? -value : 0;
+//            }));
+//
+//            // Check if this is also in join order.
+//            boolean inJoinOrder = true;
+//            int lastJoinValue = Integer.MAX_VALUE;
+//            for(Node node : nodes) {
+//                Integer value = node.getOutgoingEdges().get(commonChildFinal);
+//                value = value == null ? 0 : value;
+//                if(value >= lastJoinValue) {
+//                    inJoinOrder = false;
+//                    break;
+//                }
+//
+//                lastJoinValue = value;
+//            }
+//
+//            if (inJoinOrder) {
+//                // yes, we can perform the optimisation
+//                OPartialSolution current = createChild(nodes.get(0), processorNumber);
+//                for(int i = 1; i < nodes.size(); ++i) {
+//                    current = current.createChild(nodes.get(i), processorNumber);
+//                }
+//
+//                return Collections.singleton(current);
+//            }
+//        }
 
         for (Node node : allocation.getTasksFor(processorNumber)) {
             if ((readyToOrderBits[processorNumber] & (1L << node.getIndex())) == 0) {

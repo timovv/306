@@ -19,7 +19,7 @@ public class GraphBuilderImpl implements GraphBuilder {
 
     @Override
     public Graph build() {
-//        fixIdentical();
+        fixIdentical();
 
         built = true;
 
@@ -49,10 +49,11 @@ public class GraphBuilderImpl implements GraphBuilder {
                 if (n.isIdentical(newNode)) {
                     current.add(n);
                 }
-                if (current.size() > 1) {
-                    identicalTasks.add(current);
-                }
             }
+            if (current.size() > 1) {
+                identicalTasks.add(current);
+            }
+//            System.out.println(current);
             uncheckedNodes.removeAll(current);
         }
 
