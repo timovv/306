@@ -69,7 +69,7 @@ Optional:
 
 Visualisation
 --------------------
-[!Visualisation](visualisation.png)
+![Visualisation](visualisation.png)
 Running the program with the `-v` flag enables the visualisation. The visulisation shows useful statistics as the algorithm is running, such as the number of allocations and orderings checked and the best schedule found so far.
 
 
