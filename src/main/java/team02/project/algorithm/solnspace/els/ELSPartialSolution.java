@@ -12,6 +12,10 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+/**
+ * A partial solution in the ELS solution space. Each stage in the ELS solution space represents one additional
+ * task being added to a partial schedule: it is allocated a processor and its start time is calculated immediately
+ */
 public class ELSPartialSolution implements PartialSolution, Iterable<ScheduledTask> {
     private final SchedulingContext context;
     private final ELSPartialSolution parent;
@@ -25,6 +29,11 @@ public class ELSPartialSolution implements PartialSolution, Iterable<ScheduledTa
         this.depth = depth;
     }
 
+    /**
+     * Construct an empty ELSPartialSolution for the given context.
+     * @param context The context for which to construct the empty ELSPartialSolution
+     * @return The created ELSPartialSolution
+     */
     public static ELSPartialSolution makeEmpty(SchedulingContext context){
         return new ELSPartialSolution(context, null, null, 0);
     }
@@ -97,6 +106,9 @@ public class ELSPartialSolution implements PartialSolution, Iterable<ScheduledTa
         return output;
     }
 
+    /**
+     * @return true if this ELSPartialSolution is the root, i.e. no tasks have yet been scheduled.
+     */
     public boolean isEmpty() {
         return depth == 0;
     }
@@ -105,6 +117,11 @@ public class ELSPartialSolution implements PartialSolution, Iterable<ScheduledTa
         return Iterators.transform(iterator(), ScheduledTask::getTask);
     }
 
+    /**
+     * An Iterator that iterates through all tasks that have been scheduled so far.
+     * {@inheritDoc}
+     * @return iterator of scheduled tasks
+     */
     @Override
     public Iterator<ScheduledTask> iterator() {
         return new Iterator<ScheduledTask>() {
@@ -128,6 +145,11 @@ public class ELSPartialSolution implements PartialSolution, Iterable<ScheduledTa
         return scheduledTask;
     }
 
+    /**
+     * Find the parent of this ELSPartialSolution, i.e. the PartialSolution where the current task has not
+     * been scheduled.
+     * @return The parent of this ELSPartialSolution, or null if the current ELSPartialSolution is the root.
+     */
     public ELSPartialSolution getParent() {
         return parent;
     }

@@ -7,9 +7,19 @@ import team02.project.graph.Node;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * Represents a completed allocation in the AO solution space, where ordering is yet to performed.
+ *
+ * This class stores the complete allocation in an easy-to-access way while also storing information used to calculate
+ * heuristics used in the ordering part of the calculation.
+ */
 public class Allocation {
 
+    /**
+     * List of sets indexed by processor. Each set represents the tasks allocated to that processor.
+     */
     private final List<Set<Node>> tasks;
+
     private final int[] loadsPerProcessor;
     private final Map<Node, Integer> processors;
     private final Map<Node, Integer> topLevelAllocated;
@@ -26,7 +36,16 @@ public class Allocation {
         this.estimatedCost = estimatedCost;
     }
 
+    /**
+     * Creates an Allocation from the given complete {@link APartialSolution} object.
+     * @param alloc The {@link APartialSolution} to create this allocation from, which must be complete.
+     * @return The created allocation.
+     */
     public static Allocation fromAPartialSolution(APartialSolution alloc) {
+        if(!Objects.requireNonNull(alloc).isCompleteAllocation()) {
+            throw new IllegalArgumentException("allocation to create must be complete!");
+        }
+
         SchedulingContext ctx = alloc.getContext();
         List<Set<Node>> tasks = new ArrayList<>(ctx.getProcessorCount());
         int[] loadsPerProcessor = new int[ctx.getProcessorCount()];
@@ -37,6 +56,7 @@ public class Allocation {
         Map<Node, Integer> topLevelAllocated = new HashMap<>();
         Map<Node, Integer> processorLookup = new HashMap<>();
 
+        // go through allocation steps and allocate them while also calculating allocated top level for heuristics
         APartialSolution current = alloc;
         while(!current.isEmpty()) {
             tasks.get(current.getProcessor()).add(current.getTask());
@@ -50,6 +70,7 @@ public class Allocation {
                 .filter(x -> x.getOutgoingEdges().isEmpty())
                 .collect(Collectors.toCollection(LinkedList::new));
 
+        // calculating allocated bottom level, used for ordering heuristics
         Map<Node, Integer> bottomLevelAllocated = new HashMap<>();
         while(!queue.isEmpty()){
             Node node = queue.poll();
@@ -76,18 +97,38 @@ public class Allocation {
                 bottomLevelAllocated, alloc.getEstimatedFinishTime());
     }
 
+    /**
+     * Get the tasks allocated to the given processor.
+     * @param processor The zero-indexed processor to find the tasks for
+     * @return set of nodes allocated to the processor
+     */
     public Set<Node> getTasksFor(int processor) {
         return tasks.get(processor);
     }
 
+    /**
+     * Get the top level of the given node with respect to this allocation.
+     * @param task Task to find top level for
+     * @return Top level
+     */
     public int getTopLevelFor(Node task) {
         return topLevelAllocated.get(task);
     }
 
+    /**
+     * Get the bottom level of the given node with respect to this allocation.
+     * @param task Task to find bottom level for
+     * @return Bottom level
+     */
     public int getBottomLevelFor(Node task) {
         return bottomLevelAllocated.get(task);
     }
 
+    /**
+     * Get the processor that the given task is assigned to.
+     * @param task The task
+     * @return the zero-indexed number of the processor the input task is assigned to
+     */
     public int getProcessorFor(Node task) {
         return processors.get(task);
     }
@@ -96,18 +137,10 @@ public class Allocation {
         return loadsPerProcessor[processor];
     }
 
-
-    public Map<Node, Integer> createProcessorLookupTable() {
-        Map<Node, Integer> output = new HashMap<>();
-        for(int i = 0; i < tasks.size(); ++i) {
-            for(Node node : tasks.get(i)) {
-                output.put(node, i);
-            }
-        }
-
-        return output;
-    }
-
+    /**
+     * Get the estimated finishing time of the allocation as according to {@link APartialSolution#getEstimatedFinishTime()}
+     * @return underestimate of the finish time
+     */
     public int getEstimatedFinishTime() {
         return estimatedCost;
     }
