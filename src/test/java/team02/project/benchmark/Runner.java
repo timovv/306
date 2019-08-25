@@ -1,6 +1,8 @@
 package team02.project.benchmark;
 
 import lombok.var;
+import team02.project.algorithm.AStarAlgorithm;
+import team02.project.algorithm.ParallelBranchAndBound;
 import team02.project.algorithm.SequentialBranchBoundAlgorithm;
 import team02.project.algorithm.solnspace.ao.AOSolutionSpace;
 import team02.project.benchmark.AlgorithmBenchmark.Result;
@@ -12,9 +14,10 @@ public class Runner {
 
         System.out.println("Starting...");
 
-        var loader = new TestGraphLoader("/testPackages/all10nodes.csv");
+//        var loader = new TestGraphLoader((nodes, procs) -> true, 1, "Nodes_25_2p");
+        var loader = new TestGraphLoader("/testPackages/all16nodes.csv");
 
-        var benchmark = new AlgorithmBenchmark(() -> new SequentialBranchBoundAlgorithm(new AOSolutionSpace()));
+        var benchmark = new AlgorithmBenchmark(() -> new ParallelBranchAndBound(new AOSolutionSpace()));
 
         int total = 0;
         for (var testGraph : loader) {

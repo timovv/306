@@ -62,10 +62,29 @@ public class App extends Application{
 
     private static void runAlgorithm() {
         Graph graph = createGraph(inputFile);
+        System.out.println("Determining solution for "
+                + config.numberOfScheduleProcessors() +
+                " processors on a graph of " + graph.getNodes().size() + " nodes");
         SchedulingContext ctx = new SchedulingContext(graph, config.numberOfScheduleProcessors());
-        Schedule maybeOptimal = calculateSchedule(config, graph, ctx);
+        SchedulingAlgorithm algorithm = selectAlgorithm(config);
+        Schedule maybeOptimal =  algorithm.calculateOptimal(ctx);
         writeOutput(outputFile, ctx, maybeOptimal);
         System.out.println("Schedule output successfully");
+    }
+
+    /**
+     * Select the algorithm to use based on what the user specifies and the input graph
+     * @param config
+     * @return
+     */
+    private static SchedulingAlgorithm selectAlgorithm(CLIConfig config) {
+        if(config.isVisualize()) {
+            return new SequentialBranchBoundAlgorithm(new AOSolutionSpace(), monitor);
+        } else if(config.numberOfParallelCores() == 1) {
+            return new AStarAlgorithm(new AOSolutionSpace());
+        } else {
+            return new ParallelBranchAndBound(new AOSolutionSpace(), config.numberOfParallelCores());
+        }
     }
 
     private static CLIConfig getOptions(String[] args) {
@@ -79,17 +98,6 @@ public class App extends Application{
             System.exit(EXIT_FAILURE);
             return null;
         }
-
-        // Milestone 1 only: warnings if they configured options which don't change anything yet.
-        if(config.numberOfScheduleProcessors() != DEFAULT_SCHEDULE_PROCESSORS) {
-            System.out.println("Warning: setting the number of processors to schedule currently has no effect.");
-        }
-        if(config.numberOfParallelCores() != DEFAULT_PARALLEL_CORES) {
-            System.out.println("Warning: setting the number of parallel cores to run the algorithm on currently has no effect.");
-        }
-        if(config.isVisualize() != DEFAULT_VISUALIZATION) {
-            System.out.println("Warning: enabling the visualization currently has no effect.");
-        }
         return config;
     }
 
@@ -101,15 +109,6 @@ public class App extends Application{
             System.out.println("Error outputting graph: " + e.getMessage());
             System.exit(EXIT_FAILURE);
         }
-    }
-
-    public static Schedule calculateSchedule(CLIConfig config, Graph graph, SchedulingContext ctx) {
-        System.out.println("Determining solution for "
-                + config.numberOfScheduleProcessors() +
-                " processors on a graph of " + graph.getNodes().size() + " nodes");
-        // TODO: command-line switch to allow users to select algorithm
-        SchedulingAlgorithm algorithm = new SequentialBranchBoundAlgorithm(new AOSolutionSpace(), monitor);
-        return algorithm.calculateOptimal(ctx);
     }
 
     public static Graph createGraph(Path inputFile) {
@@ -142,7 +141,6 @@ public class App extends Application{
     @Override
     public void start(Stage primaryStage) {
         try {
-
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation(getClass().getResource("/Main.fxml"));
             MainController mainController = new MainController();

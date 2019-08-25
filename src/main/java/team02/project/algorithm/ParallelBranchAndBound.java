@@ -5,27 +5,35 @@ import team02.project.algorithm.solnspace.PartialSolution;
 import team02.project.algorithm.solnspace.SolutionSpace;
 import team02.project.algorithm.solnspace.ao.AOSolutionSpace;
 
+import javax.naming.PartialResultException;
 import java.util.LinkedList;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class ParallelBranchAndBound implements SchedulingAlgorithm {
-    private static final int SYNC_COUNT = 100000;
+    private static final int SYNC_COUNT = 10000;
     private static final int SEARCH_THRESHOLD = 10;
 
     private int ubound = Integer.MAX_VALUE;
     private PartialSolution best = null;
     private SolutionSpace solutionSpace;
+    private int parallelism;
 
     public ParallelBranchAndBound(SolutionSpace solutionSpace) {
         this.solutionSpace = solutionSpace;
+        this.parallelism = Runtime.getRuntime().availableProcessors(); // default is max
+    }
+
+    public ParallelBranchAndBound(SolutionSpace solutionSpace, int numProcessors){
+        this.solutionSpace = solutionSpace;
+        this.parallelism = numProcessors;
     }
 
 
     @Override
     public Schedule calculateOptimal(SchedulingContext ctx) {
-        int parallelism = Runtime.getRuntime().availableProcessors(); // this should be passed in later
+        ; // this should be passed in later
         LinkedList<PartialSolution> scheduleStack = new LinkedList<>();
         scheduleStack.add(solutionSpace.getRoot(ctx));
         ForkSearch fs = new ForkSearch(scheduleStack);
