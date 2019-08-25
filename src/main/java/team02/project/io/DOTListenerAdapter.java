@@ -15,13 +15,23 @@ class DOTListenerAdapter extends DOTBaseListener {
     @Setter
     private GraphBuilder graphBuilder;
 
+    /**
+     * Sets the ID of a graph given a context
+     *
+     * @param ctx the {@link DOTParser.GraphContext} including input graph
+     */
     @Override
     public void exitGraph(DOTParser.GraphContext ctx) {
-        if(ctx.id() != null) {
+        if (ctx.id() != null) {
             graphBuilder.setId(ctx.id().getText());
         }
     }
 
+    /**
+     * Add nodes from a given context
+     *
+     * @param ctx the {@link DOTParser.Node_stmtContext} including containing nodes
+     */
     @Override
     public void exitNode_stmt(DOTParser.Node_stmtContext ctx) {
         if (ctx.attr_list() == null || ctx.attr_list().a_list() == null) {
@@ -30,8 +40,13 @@ class DOTListenerAdapter extends DOTBaseListener {
 
         var nodeId = ctx.node_id().id().getText();
         graphBuilder.addNode(nodeId, getWeight(ctx.attr_list()));
-}
+    }
 
+    /**
+     * Add edges given a context
+     *
+     * @param ctx the {@link DOTParser.Edge_stmtContext} including edges
+     */
     @Override
     public void exitEdge_stmt(DOTParser.Edge_stmtContext ctx) {
         if (ctx.node_id() == null) {
@@ -49,6 +64,12 @@ class DOTListenerAdapter extends DOTBaseListener {
         graphBuilder.addEdge(lhsId, rhsId, getWeight(ctx.attr_list()));
     }
 
+    /**
+     * Finds weights given a context
+     *
+     * @param context the {@link DOTParser.Attr_listContext} containing weights
+     * @return weight of a graph
+     */
     private int getWeight(DOTParser.Attr_listContext context) {
         return context.a_list()
                 .stream()
