@@ -4,7 +4,7 @@ SOFTENG 306 Project 1
 [![CircleCI](https://circleci.com/gh/timovv/306.svg?style=shield&circle-token=61b40179d47c1370d4ecf661800770f71a60787f)](https://circleci.com/gh/timovv/306)
 ![Team-02 Logo](logo.png)
 
-
+This project aims to develop a fast algorithm to solve optimal task scheduling on multiple processors. We have implemented three different algorithms, DFS branch-and-bound, A* and a parallel version of DFS branch-and-bound. A* is typically used, but DFSBnB is used for visualisation, whereas parallel DFSBnB is used when multiple processors are specified by the user. These algorithms all run on a allocation-ordering (AO) search space. To find schedules, tasks are first allocated to a processor. Then, the tasks on each processor are ordered to form a valid schedule.
 
 The Team
 --------
@@ -53,7 +53,7 @@ Usage
 
 To execute, just run `java -jar <jarname.jar> [options...]`
 
-The appliation accepts a number of command-line parameters, not all of which are currently implemented:
+The appliation accepts a number of command-line parameters.
 
 ```
 Usage: java -jar <project.jar> INPUT.dot P [OPTIONS]
@@ -66,6 +66,12 @@ Optional:
 -v (Visualise the search.) 
 -o OUTPUT (Output file is named OUTPUT (default is INPUT-output.dot).)
 ```
+
+Visualisation
+--------------------
+[!Visualisation](visualisation.png)
+Running the program with the `-v` flag enables the visualisation. The visulisation shows useful statistics as the algorithm is running, such as the number of allocations and orderings checked and the best schedule found so far.
+
 
 Useful Documentation
 --------------------
