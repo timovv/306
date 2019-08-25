@@ -4,7 +4,7 @@ SOFTENG 306 Project 1
 [![CircleCI](https://circleci.com/gh/timovv/306.svg?style=shield&circle-token=61b40179d47c1370d4ecf661800770f71a60787f)](https://circleci.com/gh/timovv/306)
 ![Team-02 Logo](logo.png)
 
-This project aims to develop a fast algorithm to solve optimal task scheduling on multiple processors. We have implemented three different algorithms, DFS branch-and-bound, A* and a parallel version of DFS branch-and-bound. A* is typically used, but DFSBnB is used for visualisation, whereas parallel DFSBnB is used when multiple processors are specified by the user. These algorithms all run on a allocation-ordering (AO) search space. To find schedules, tasks are first allocated to a processor. Then, the tasks on each processor are ordered to form a valid schedule.
+This project aims to develop a fast algorithm to solve optimal task scheduling on multiple processors. We have implemented three different algorithms, DFS branch-and-bound, A* and a parallel version of DFS branch-and-bound. DFSBnB is typically used for its higher speed in testing and low memory usage. Parallel DFSBnB is used when multiple processors are specified by the user. These algorithms all run on a allocation-ordering (AO) search space. To find schedules, tasks are first allocated to a processor. Then, the tasks on each processor are ordered to form a valid schedule.
 
 The Team
 --------
@@ -80,3 +80,4 @@ Useful Documentation
 * [Project Plan](https://github.com/timovv/306/wiki/Project-Plan)
 * [Architecture design document](https://github.com/timovv/306/wiki/Architecture)
 * [Algorithm ideas](https://github.com/timovv/306/wiki/Algorithms:-ideas-and-approaches)
+* [Wiki](https://github.com/timovv/306/wiki)
