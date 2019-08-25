@@ -10,6 +10,7 @@ import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -36,6 +37,8 @@ import java.util.*;
 import static javafx.scene.paint.Color.rgb;
 
 public class MainController {
+
+    private static final int CHART_MAX_ELEMENTS = 600;
 
     @FXML
     private VBox statsBox;
@@ -105,8 +108,21 @@ public class MainController {
             }
             currentBestText.setText("" + monitor.getCurrentBest().getFinishTime());
             updateNumSchedules(monitor.getCompleteSchedules());
-            allocationTile.setChartData(new ChartData(monitor.getAllocationsExpanded()));
-            orderTile.setChartData(new ChartData(monitor.getOrderingsExpanded()));
+
+            ObservableList<ChartData> allocData = allocationTile.getChartData();
+            ObservableList<ChartData> orderData = orderTile.getChartData();
+
+
+            if (allocData.size() >= CHART_MAX_ELEMENTS) {
+                allocData.remove(allocData.size() / 2);
+            }
+
+            if (orderData.size() >= CHART_MAX_ELEMENTS) {
+                orderData.remove(orderData.size() / 2);
+            }
+
+            allocationTile.addChartData(new ChartData(monitor.getAllocationsExpanded()));
+            orderTile.addChartData(new ChartData(monitor.getOrderingsExpanded()));
         }));
         poller.setCycleCount(Animation.INDEFINITE);
         poller.play();

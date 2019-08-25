@@ -31,6 +31,8 @@ public class SequentialBranchBoundAlgorithm implements SchedulingAlgorithm {
         int ubound = simpleListSchedule.getFinishTime();
         PartialSolution best = null;
 
+        monitor.setCurrentBest(simpleListSchedule);
+
         long schedulesCreated = 0;
         long allocationsExpanded = 0;
         long orderingsExpanded = 0;
