@@ -21,7 +21,8 @@ public class SequentialBranchBoundAlgorithm implements SchedulingAlgorithm {
 
     @Override
     public Schedule calculateOptimal(SchedulingContext ctx) {
-        int ubound = ctx.getTaskGraph().getNodes().stream().mapToInt(Node::getWeight).sum();
+        Schedule simpleListSchedule = new TopologicalSortAlgorithm().calculateOptimal(ctx);
+        int ubound = simpleListSchedule.getFinishTime();
         PartialSolution best = null;
 
         LinkedList<PartialSolution> scheduleStack = new LinkedList<>();
@@ -47,8 +48,7 @@ public class SequentialBranchBoundAlgorithm implements SchedulingAlgorithm {
         }
 
         if(best == null) {
-            // turns out best is just to put everything on one processor
-            return new TopologicalSortAlgorithm().calculateOptimal(ctx);
+            return simpleListSchedule;
         }
 
         return best.makeComplete();
