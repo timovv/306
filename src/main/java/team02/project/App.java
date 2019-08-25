@@ -82,7 +82,7 @@ public class App extends Application{
         if(config.isVisualize()) {
             return new SequentialBranchBoundAlgorithm(new AOSolutionSpace(), monitor);
         } else if(config.numberOfParallelCores() == 1) {
-            return new AStarAlgorithm(new AOSolutionSpace());
+            return new SequentialBranchBoundAlgorithm(new AOSolutionSpace(), null);
         } else {
             return new ParallelBranchAndBound(new AOSolutionSpace(), config.numberOfParallelCores());
         }
