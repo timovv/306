@@ -33,8 +33,8 @@ public class AStarTest {
 
     @Test
     public void testFirst() {
-        SchedulingAlgorithm alg = new AStarAlgorithm();
-        Schedule sched = alg.calculateOptimal(this.testCtx);
+//        SchedulingAlgorithm alg = new AStarAlgorithm();
+//        Schedule sched = alg.calculateOptimal(this.testCtx);
 
         SolutionSpace solutionSpace = new AOSolutionSpace();
         solutionSpace.getRoot(this.testCtx);

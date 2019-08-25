@@ -1,0 +1,13 @@
+/* import fonts */
+@font-face {
+    src: url("/RobotoMono-Regular.ttf");
+}
+
+@font-face {
+    src: url("/RobotoMono-Light.ttf");
+}
+
+.text-id {
+    -fx-text-fill: red;
+    -fx-font-family: 'Roboto Mono Light';
+}

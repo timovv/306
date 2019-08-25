@@ -7,7 +7,7 @@
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.text.TextFlow?>
 
-<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="565.0" prefWidth="1024.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1">
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="565.0" prefWidth="1024.0" xmlns="http://javafx.com/javafx/8.0.192" xmlns:fx="http://javafx.com/fxml/1">
    <children>
       <HBox prefHeight="384.0" prefWidth="1024.0">
          <children>
@@ -72,7 +72,7 @@
                            </font></Text>
                         <Text fx:id="timeElapsedText" layoutX="436.0" layoutY="49.0" strokeType="OUTSIDE" strokeWidth="0.0" text="0" textAlignment="CENTER" wrappingWidth="202.0">
                            <font>
-                              <Font size="34.0" />
+                              <Font name="Roboto" size="34.0" />
                            </font></Text>
                      </children>
                   </Pane>

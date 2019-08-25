@@ -22,7 +22,6 @@ public class FXApp extends Application {
 
     @Override
     public void start(Stage primaryStage) throws IOException {
-
         try {
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation(getClass().getResource("/Main.fxml"));

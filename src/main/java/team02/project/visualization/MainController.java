@@ -6,6 +6,8 @@ import eu.hansolo.tilesfx.chart.ChartData;
 import eu.hansolo.tilesfx.colors.Bright;
 import eu.hansolo.tilesfx.colors.Dark;
 import eu.hansolo.tilesfx.tools.FlowGridPane;
+import javafx.animation.Animation;
+import javafx.animation.AnimationTimer;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.collections.FXCollections;
@@ -84,8 +86,6 @@ public class MainController{
     private double currentTime;
     private double finishTime;
 
-
-
     public void init() {
 
         setUpMemoryTile();
@@ -97,9 +97,12 @@ public class MainController{
 
         // monitor and update view of memory on another thread
         Timeline memoryHandler = new Timeline(new KeyFrame(Duration.seconds(1), event -> {
-            memoryTile.setValue(Runtime.getRuntime().totalMemory()/ (1024 * 1024));
+            double memoryUsage = (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory())/(1000000d);
+            allocationTile.addChartData(new ChartData(Math.random() * 1000));
+            orderTile.addChartData(new ChartData(Math.random() * 1000));
+            memoryTile.setValue(memoryUsage);
         }));
-        memoryHandler.setCycleCount(Timeline.INDEFINITE);
+        memoryHandler.setCycleCount(Animation.INDEFINITE);
         memoryHandler.play();
 
         // initialize the value in order for setValue
