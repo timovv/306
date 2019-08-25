@@ -115,6 +115,13 @@ public class MainController {
 
     private void startPolling() {
         Timeline poller = new Timeline(new KeyFrame(Duration.millis(50), event -> {
+            if(monitor.isFinished()){
+                runningText.setStyle("-fx-fill: rgb(15,157,88);");
+                runningText.setText("Done!");
+                stopTimer();
+                return;
+            }
+
             double memoryUsage = (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory())/(1000000d);
             memoryTile.setValue(memoryUsage);
 
@@ -138,12 +145,6 @@ public class MainController {
 
             allocationTile.addChartData(new ChartData(monitor.getAllocationsExpanded()));
             orderTile.addChartData(new ChartData(monitor.getOrderingsExpanded()));
-
-            if(monitor.isFinished()){
-                runningText.setStyle("-fx-fill: rgb(15,157,88);");
-                runningText.setText("Done!");
-                stopTimer();
-            }
         }));
         poller.setCycleCount(Animation.INDEFINITE);
         poller.play();

@@ -197,7 +197,7 @@ public class OPartialSolution implements PartialSolution {
             for(Node node : nodes) {
                 Integer value = node.getOutgoingEdges().get(commonChildFinal);
                 value = value == null ? 0 : value;
-                if(value > lastJoinValue) {
+                if(value >= lastJoinValue) {
                     inJoinOrder = false;
                     break;
                 }
