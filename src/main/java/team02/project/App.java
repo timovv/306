@@ -65,7 +65,7 @@ public class App extends Application{
         Graph graph = createGraph(inputFile);
         System.out.println("Determining solution for "
                 + config.numberOfScheduleProcessors() +
-                " processors on a graph of " + graph.getNodes().size() + " nodes");
+                " processors on a graph of " + graph.getNodes().length + " nodes");
         SchedulingContext ctx = new SchedulingContext(graph, config.numberOfScheduleProcessors());
         SchedulingAlgorithm algorithm = selectAlgorithm(config);
         Schedule maybeOptimal =  algorithm.calculateOptimal(ctx);

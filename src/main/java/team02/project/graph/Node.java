@@ -27,11 +27,26 @@ public interface Node {
     int getIndex();
 
     /**
-     * Get the parent {@link Node nodes} and their associated weight
+     * @return the weights of the incoming edges corresponding to teh edge at node i of {{@link #getIncomingEdgeNodes()}}.
+     */
+    int[] getIncomingEdgeWeights();
+
+    /**
+     * nodes for which an edge exists from that node to this node.
      * @return
      */
-    Map<Node, Integer> getOutgoingEdges();
-    Map<Node, Integer> getIncomingEdges();
+    Node[] getIncomingEdgeNodes();
+
+    /**
+     * @return the weights of the outgoing edges corresponding to the edge at node i of {@link #getOutgoingEdgeNodes()}
+     */
+    int[] getOutgoingEdgeWeights();
+
+    /**
+     * nodes for which an edge exists from that node to this node.
+     * @return
+     */
+    Node[] getOutgoingEdgeNodes();
 
     Set<Node> getDependencies();
 

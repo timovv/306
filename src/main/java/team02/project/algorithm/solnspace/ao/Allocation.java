@@ -53,8 +53,8 @@ public class Allocation {
             tasks.add(new HashSet<>());
         }
 
-        int[] topLevelAllocated = new int[ctx.getTaskGraph().getNodes().size()];
-        int[] processorLookup = new int[ctx.getTaskGraph().getNodes().size()];
+        int[] topLevelAllocated = new int[ctx.getTaskGraph().getNodes().length];
+        int[] processorLookup = new int[ctx.getTaskGraph().getNodes().length];
 
         // go through allocation steps and allocate them while also calculating allocated top level for heuristics
         APartialSolution current = alloc;
@@ -67,30 +67,33 @@ public class Allocation {
             current = current.getParent();
         }
 
-        Queue<Node> queue = alloc.getContext().getTaskGraph().getNodes().stream()
-                .filter(x -> x.getOutgoingEdges().isEmpty())
+        Queue<Node> queue = Arrays.stream(alloc.getContext().getTaskGraph().getNodes())
+                .filter(x -> x.getOutgoingEdgeNodes().length == 0)
                 .collect(Collectors.toCollection(LinkedList::new));
 
         // calculating allocated bottom level, used for ordering heuristics
-        int[] bottomLevelAllocated = new int[ctx.getTaskGraph().getNodes().size()];
+        int[] bottomLevelAllocated = new int[ctx.getTaskGraph().getNodes().length];
         while(!queue.isEmpty()){
             Node node = queue.poll();
 
-            int bottomLevel = node.getOutgoingEdges().entrySet()
-                    .stream()
-                    .mapToInt(childEntry -> {
-                        if(processorLookup[node.getIndex()] == processorLookup[childEntry.getKey().getIndex()]) {
-                            return childEntry.getKey().getBottomLevel();
-                        } else {
-                            return childEntry.getKey().getBottomLevel() + childEntry.getValue();
-                        }
-                    })
-                    .max()
-                    .orElse(0) + node.getWeight();
+
+            int bottomLevel = 0;
+            for(int i = 0; i < node.getOutgoingEdgeNodes().length; ++i) {
+                val otherNode = node.getOutgoingEdgeNodes()[i];
+                int edgeWeight = node.getOutgoingEdgeWeights()[i];
+
+                val newValue = processorLookup[node.getIndex()] == processorLookup[otherNode.getIndex()]
+                        ? otherNode.getBottomLevel()
+                        : otherNode.getBottomLevel() + edgeWeight;
+
+                if(newValue > bottomLevel) {
+                    bottomLevel = newValue;
+                }
+            }
 
             bottomLevelAllocated[node.getIndex()] = bottomLevel;
 
-            for(val node2 : node.getIncomingEdges().keySet()) {
+            for(val node2 : node.getIncomingEdgeNodes()) {
                 queue.offer(node2);
             }
         }

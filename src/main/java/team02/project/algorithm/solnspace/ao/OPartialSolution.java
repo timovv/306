@@ -107,7 +107,7 @@ public class OPartialSolution implements PartialSolution {
         Set<PartialSolution> output = new HashSet<>();
 
         // Build a table of all the previously calculated estimated start time
-        int[] historicEstimatedStartTimes = new int[getContext().getTaskGraph().getNodes().size()];
+        int[] historicEstimatedStartTimes = new int[context.getTaskGraph().getNodes().length];
 
         // The sum of weights already ordered on each processor
         int[] totalOrdered = new int[getContext().getProcessorCount()];
@@ -137,14 +137,14 @@ public class OPartialSolution implements PartialSolution {
 
             canFixOrder = true;
 
-            if (node.getIncomingEdges().size() > 1 || node.getOutgoingEdges().size() > 1) {
+            if (node.getIncomingEdgeNodes().length > 1 || node.getOutgoingEdgeNodes().length > 1) {
                 canFixOrder = false;
                 break;
             }
 
             // will iterate at most once.
             // -- checking for same parent
-            for (Node parent : node.getIncomingEdges().keySet()) {
+            for (Node parent : node.getIncomingEdgeNodes()) {
                 if (commonParent == null) {
                     commonParent = parent;
                 }
@@ -156,7 +156,7 @@ public class OPartialSolution implements PartialSolution {
             }
 
             // -- checking for same child
-            for (Node child : node.getOutgoingEdges().keySet()) {
+            for (Node child : node.getOutgoingEdgeNodes()) {
                 if (commonChild == null) {
                     commonChild = child;
                 }
@@ -169,9 +169,6 @@ public class OPartialSolution implements PartialSolution {
         }
 
         if(canFixOrder && (readyToOrderBits & (readyToOrderBits - 1)) != 0) {
-            final Node commonParentFinal = commonParent;
-            final Node commonChildFinal = commonChild;
-
             // 1. Place the tasks in fork order.
             List<Node> nodes = new ArrayList<>();
             for(Node node : allocation.getTasksFor(processorNumber)) {
@@ -183,20 +180,30 @@ public class OPartialSolution implements PartialSolution {
             // Order in fork order, resolving conflicts using join order.
             // if the result is the join order, then we can perform the optimisation.
             nodes.sort(Comparator.<Node>comparingInt(x -> {
-                Integer value = x.getIncomingEdges().get(commonParentFinal);
-                return value != null ? value : 0;
+                if(x.getIncomingEdgeWeights().length == 0) {
+                    return 0;
+                }
+
+                return x.getIncomingEdgeWeights()[0];
             }).thenComparingInt(x -> {
-                Integer value = x.getOutgoingEdges().get(commonChildFinal);
+                if(x.getOutgoingEdgeWeights().length == 0) {
+                    return 0;
+                }
+
                 // sorting this in descending order
-                return value != null ? -value : 0;
+                return -x.getOutgoingEdgeWeights()[0];
             }));
 
             // Check if this is also in join order.
             boolean inJoinOrder = true;
             int lastJoinValue = Integer.MAX_VALUE;
             for(Node node : nodes) {
-                Integer value = node.getOutgoingEdges().get(commonChildFinal);
-                value = value == null ? 0 : value;
+                int value;
+                if(node.getOutgoingEdgeWeights().length == 0) {
+                    value = 0;
+                } else {
+                    value = node.getOutgoingEdgeWeights()[0];
+                }
                 if(value >= lastJoinValue) {
                     inJoinOrder = false;
                     break;
@@ -253,7 +260,7 @@ public class OPartialSolution implements PartialSolution {
     private OPartialSolution createChild(Node node, int processorNumber) {
         int[] totalOrdered = new int[getContext().getProcessorCount()];
         int[] latestFinishTime = new int[getContext().getProcessorCount()];
-        int[] historicEstimatedStartTimes = new int[getContext().getTaskGraph().getNodes().size()];
+        int[] historicEstimatedStartTimes = new int[getContext().getTaskGraph().getNodes().length];
         calculateHeuristicInfo(totalOrdered, latestFinishTime, historicEstimatedStartTimes);
         return createChild(node, processorNumber, totalOrdered, latestFinishTime, historicEstimatedStartTimes);
     }
@@ -284,15 +291,19 @@ public class OPartialSolution implements PartialSolution {
         }
 
         int newDataReadyTime = 0;
-        for (Map.Entry<Node, Integer> pred : node.getIncomingEdges().entrySet()) {
+
+        for(int i = 0; i < node.getIncomingEdgeNodes().length; ++i) {
+            Node edgeNode = node.getIncomingEdgeNodes()[i];
+            int edgeWeight = node.getIncomingEdgeWeights()[i];
+
             int predFinishTime;
-            if (historicEstimatedStartTimes[pred.getKey().getIndex()] != 0) {
-                predFinishTime = historicEstimatedStartTimes[pred.getKey().getIndex()] + pred.getKey().getWeight();
+            if (historicEstimatedStartTimes[edgeNode.getIndex()] != 0) {
+                predFinishTime = historicEstimatedStartTimes[edgeNode.getIndex()] + edgeNode.getWeight();
             } else {
-                predFinishTime = allocation.getTopLevelFor(pred.getKey());
+                predFinishTime = allocation.getTopLevelFor(edgeNode);
             }
-            if (allocation.getProcessorFor(pred.getKey()) != processorNumber) {
-                predFinishTime += pred.getValue();
+            if (allocation.getProcessorFor(edgeNode) != processorNumber) {
+                predFinishTime += edgeWeight;
             }
             newDataReadyTime = Math.max(newDataReadyTime, predFinishTime);
         }
@@ -376,7 +387,7 @@ public class OPartialSolution implements PartialSolution {
      * @return true if the ordering is complete, otherwise false.
      */
     public boolean isOrderingComplete() {
-        return depth == getContext().getTaskGraph().getNodes().size();
+        return depth == getContext().getTaskGraph().getNodes().length;
     }
 
     /**
