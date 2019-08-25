@@ -158,9 +158,7 @@ public class App extends Application{
             // Register MainController as a listener;
 
             // Run the algorithm on another thread
-            new Thread(() -> {
-                runAlgorithm();
-            }).start();
+            new Thread(App::runAlgorithm).start();
 
             primaryStage.setTitle("Team-02 Algorithm Scheduler");
 
@@ -168,6 +166,7 @@ public class App extends Application{
             Scene mainScene = new Scene(root);
 
             //setting and showing stage
+            primaryStage.setResizable(false);
             primaryStage.setScene(mainScene);
 
             // proper exit

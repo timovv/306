@@ -4,12 +4,12 @@ import lombok.val;
 import team02.project.algorithm.solnspace.PartialSolution;
 import team02.project.algorithm.solnspace.SolutionSpace;
 import team02.project.algorithm.solnspace.ao.APartialSolution;
-import team02.project.graph.Node;
 
 import java.util.LinkedList;
 
 /**
  * Bounds any complete schedules which exceed the current upper bound
+ * This algorithm supports visualization.
  */
 public class SequentialBranchBoundAlgorithm implements SchedulingAlgorithm {
 
@@ -74,6 +74,10 @@ public class SequentialBranchBoundAlgorithm implements SchedulingAlgorithm {
                 monitor.setOrderingsExpanded(orderingsExpanded);
                 monitor.setCompleteSchedules(schedulesCreated);
             }
+        }
+
+        if(monitor != null) {
+            monitor.setFinished(true);
         }
 
         if(best == null) {

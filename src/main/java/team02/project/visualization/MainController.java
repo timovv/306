@@ -18,9 +18,11 @@ import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.chart.XYChart.Series;
+import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
 import javafx.scene.paint.Stop;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
@@ -65,7 +67,7 @@ public class MainController {
     private TextFlow numProFlow, inGraphFlow, outGraphFlow;
 
     @FXML
-    private Text schedCreatedText, currentBestText, timeElapsedText;
+    private Text schedCreatedText, currentBestText, timeElapsedText, runningText;
 
     private Tile memoryTile;
     private Tile allocationTile;
@@ -93,6 +95,7 @@ public class MainController {
     public void init() {
         Objects.requireNonNull(config);
 
+        // set up display elements
         setUpMemoryTile();
         setUpAllocationTile();
         setUpOrderTile();
@@ -100,9 +103,21 @@ public class MainController {
         setUpGanttBox();
         setUpStatsBox();
 
+        // start polling
+        startPolling();
+
+        // initialize the value in order for setValue to work properly
+        memoryTile.setValue(0);
+
+        // begin timer
+        startTimer();
+    }
+
+    private void startPolling() {
         Timeline poller = new Timeline(new KeyFrame(Duration.millis(50), event -> {
             double memoryUsage = (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory())/(1000000d);
             memoryTile.setValue(memoryUsage);
+
             if(monitor.getCurrentBest() != null){
                 updateGannt(monitor.getCurrentBest());
             }
@@ -112,23 +127,26 @@ public class MainController {
             ObservableList<ChartData> allocData = allocationTile.getChartData();
             ObservableList<ChartData> orderData = orderTile.getChartData();
 
-
+            // Randomly remove data points to not overload GUI
             if (allocData.size() >= CHART_MAX_ELEMENTS) {
-                allocData.remove(allocData.size() / 2);
+                allocData.remove((int) (Math.random() * allocData.size()));
             }
 
             if (orderData.size() >= CHART_MAX_ELEMENTS) {
-                orderData.remove(orderData.size() / 2);
+                orderData.remove((int) (Math.random() * orderData.size()));
             }
 
             allocationTile.addChartData(new ChartData(monitor.getAllocationsExpanded()));
             orderTile.addChartData(new ChartData(monitor.getOrderingsExpanded()));
+
+            if(monitor.isFinished()){
+                runningText.setStyle("-fx-fill: rgb(15,157,88);");
+                runningText.setText("Done!");
+                stopTimer();
+            }
         }));
         poller.setCycleCount(Animation.INDEFINITE);
         poller.play();
-
-        // initialize the value in order for setValue
-        memoryTile.setValue(0);
     }
 
     private void setUpMemoryTile() {
@@ -160,6 +178,10 @@ public class MainController {
                 .chartData(new ChartData(0), new ChartData(0))
                 .animated(false)
                 .smoothing(true)
+                .title("Allocations Checked")
+                .titleColor(rgb(219,68,55))
+                .textSize(Tile.TextSize.BIGGER)
+                .decimals(0)
                 .minWidth(387)
                 .backgroundColor(Color.WHITE)
                 .valueColor(rgb(219,68,55))
@@ -174,6 +196,10 @@ public class MainController {
                 .animated(false)
                 .smoothing(true)
                 .minWidth(387)
+                .decimals(0)
+                .title("Orderings Checked")
+                .textSize(Tile.TextSize.BIGGER)
+                .titleColor(rgb(15,157,88))
                 .backgroundColor(Color.WHITE)
                 .valueColor(rgb(15,157,88))
                 .build();
@@ -182,19 +208,23 @@ public class MainController {
     }
 
     private void setUpScheduleTile() {
-        this.scheduleTile =  TileBuilder.create().skinType(Tile.SkinType.NUMBER)
-                .titleAlignment(TextAlignment.CENTER)
+        this.scheduleTile =  TileBuilder.create().skinType(Tile.SkinType.CHARACTER)
+                .description("" + monitor.getCompleteSchedules())
+                .textColor(rgb(66,133,244))
                 .animated(true)
                 .decimals(0)
                 .backgroundColor(Color.WHITE)
-                .valueColor(rgb(66,133,244))
+                .textSize(Tile.TextSize.BIGGER)
+                .title("Complete Schedules Checked")
+                .titleAlignment(TextAlignment.CENTER)
+                .titleColor(rgb(66,133,244))
                 .build();
 
         schedulesBox.getChildren().addAll(buildFlowGridPane(this.scheduleTile));
     }
 
     private void updateNumSchedules(long i){
-        schedCreatedText.setText(String.valueOf(i));
+        scheduleTile.setDescription(""+i);
     }
 
     private FlowGridPane buildFlowGridPane(Tile tile) {
@@ -202,7 +232,16 @@ public class MainController {
     }
 
     private void setUpStatsBox(){
-        numProFlow.getChildren().add(new Text(String.valueOf(config.numberOfScheduleProcessors())));
+//        numProFlow.getChildren().add(new Text(String.valueOf(config.numberOfScheduleProcessors())));
+//
+//        String inputString = config.inputDOTFile();
+//        String outputString = config.outputDOTFile();
+//
+//        inputString = inputString.substring(inputString.lastIndexOf('/')+1);
+//        outputString = outputString.substring(outputString.lastIndexOf('/')+1);
+//
+//        inGraphFlow.getChildren().add(new Text(inputString));
+//        outGraphFlow.getChildren().add(new Text(outputString));
 
         String inputString = config.inputDOTFile();
         String outputString = config.outputDOTFile();
@@ -210,8 +249,18 @@ public class MainController {
         inputString = inputString.substring(inputString.lastIndexOf('/')+1);
         outputString = outputString.substring(outputString.lastIndexOf('/')+1);
 
-        inGraphFlow.getChildren().add(new Text(inputString));
-        outGraphFlow.getChildren().add(new Text(outputString));
+        Text inputText = new Text(inputString);
+        Text outputText = new Text(outputString);
+        Text processorText = new Text(String.valueOf(config.numberOfScheduleProcessors()));
+
+        inputText.setStyle("-fx-font-family:\'Roboto Mono\'");
+        outputText.setStyle("-fx-font-family:\'Roboto Mono\'");
+        processorText.setStyle("-fx-font-family:\'Roboto Mono\'");
+
+
+        inGraphFlow.getChildren().add(inputText);
+        outGraphFlow.getChildren().add(outputText);
+        numProFlow.getChildren().add(processorText);
     }
 
     private void startTimer(){
@@ -246,13 +295,13 @@ public class MainController {
         // Setting up time (x) axis
         final NumberAxis timeAxis = new NumberAxis();
         timeAxis.setLabel("");
-        timeAxis.setTickLabelFill(Color.CHOCOLATE);
-        timeAxis.setMinorTickCount(1);
+        timeAxis.setTickLabelFill(Color.rgb(254,89,21));
+        timeAxis.setMinorTickCount(4);
 
         // Setting up processor (y) axis
         final CategoryAxis processorAxis = new CategoryAxis();
         processorAxis.setLabel("");
-        processorAxis.setTickLabelFill(Color.CHOCOLATE);
+        timeAxis.setTickLabelFill(Color.rgb(254,89,21));
         processorAxis.setTickLabelGap(1);
         processorAxis.setCategories(FXCollections.<String>observableArrayList(Arrays.asList(processors)));
 
@@ -264,6 +313,7 @@ public class MainController {
         chart.getStylesheets().add(getClass().getResource("/GanttChart.css").toExternalForm());
         chart.setMaxHeight(ganttBox.getPrefHeight());
         ganttBox.getChildren().add(chart);
+        ganttBox.setStyle("-fx-background-color: WHITE");
 
     }
 

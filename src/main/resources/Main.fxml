@@ -7,78 +7,81 @@
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.text.TextFlow?>
 
-<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="565.0" prefWidth="1024.0" xmlns="http://javafx.com/javafx/8.0.192" xmlns:fx="http://javafx.com/fxml/1">
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="565.0" prefWidth="1024.0" styleClass="Main.css" stylesheets="Main.css" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1">
    <children>
       <HBox prefHeight="384.0" prefWidth="1024.0">
          <children>
             <VBox fx:id="ganttBox" prefHeight="379.0" prefWidth="640.0" />
             <VBox prefHeight="384.0" prefWidth="389.0">
                <children>
-                  <HBox fx:id="allocBox" prefHeight="214.0" prefWidth="387.0" style="-fx-border-color: yellow;" />
-                  <HBox fx:id="orderBox" prefHeight="205.0" prefWidth="387.0" style="-fx-border-color: blue;" />
+                  <HBox fx:id="allocBox" prefHeight="214.0" prefWidth="387.0" />
+                  <HBox fx:id="orderBox" prefHeight="205.0" prefWidth="387.0" />
                </children>
             </VBox>
          </children>
       </HBox>
       <HBox prefHeight="192.0" prefWidth="1024.0">
          <children>
-            <VBox fx:id="statsBox" prefHeight="187.0" prefWidth="641.0" style="-fx-border-color: blue;">
+            <VBox fx:id="statsBox" prefHeight="187.0" prefWidth="641.0" style="-fx-background-color: white;">
                <children>
-                  <Pane prefHeight="200.0" prefWidth="200.0">
+                  <Pane prefHeight="200.0" prefWidth="200.0" stylesheets="@GanttChart.css">
                      <children>
-                        <Text layoutX="279.0" layoutY="80.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Current Best">
+                        <Text layoutX="37.0" layoutY="65.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="text-id" text="Current Best">
                            <font>
                               <Font name="Roboto" size="20.0" />
                            </font></Text>
-                        <Text layoutX="39.0" layoutY="80.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Schedules Created">
+                        <Text layoutX="231.0" layoutY="65.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="text-id" text="Time Elapsed">
                            <font>
                               <Font name="Roboto" size="20.0" />
                            </font></Text>
-                        <Text layoutX="477.0" layoutY="80.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Time Elapsed">
-                           <font>
-                              <Font name="Roboto" size="20.0" />
-                           </font></Text>
-                        <TextFlow fx:id="inGraphFlow" layoutX="14.0" layoutY="93.0" prefHeight="17.0" prefWidth="588.0">
+                        <TextFlow fx:id="inGraphFlow" layoutX="14.0" layoutY="93.0" prefHeight="17.0" prefWidth="623.0">
                            <children>
-                              <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Input Graph: ">
+                              <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="text-id" text="Input Graph: ">
                                  <font>
                                     <Font name="Roboto" size="13.0" />
                                  </font></Text>
                            </children>
                         </TextFlow>
-                        <TextFlow fx:id="outGraphFlow" layoutX="14.0" layoutY="115.0" prefHeight="17.0" prefWidth="560.0">
+                        <TextFlow fx:id="outGraphFlow" layoutX="14.0" layoutY="124.0" prefHeight="17.0" prefWidth="623.0">
                            <children>
-                              <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Output Graph: ">
+                              <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="text-id" text="Output Graph: ">
                                  <font>
                                     <Font name="Roboto" size="13.0" />
                                  </font></Text>
                            </children>
                         </TextFlow>
-                        <TextFlow fx:id="numProFlow" layoutX="14.0" layoutY="136.0" prefHeight="17.0" prefWidth="523.0">
+                        <TextFlow fx:id="numProFlow" layoutX="14.0" layoutY="156.0" prefHeight="17.0" prefWidth="623.0">
                            <children>
-                              <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Number of Processors: ">
+                              <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="text-id" text="Number of Processors: ">
                                  <font>
                                     <Font name="Roboto" size="13.0" />
-                                 </font></Text>
+                                 </font>
+                              </Text>
                            </children>
                         </TextFlow>
-                        <Text fx:id="schedCreatedText" layoutX="36.0" layoutY="48.0" strokeType="OUTSIDE" strokeWidth="0.0" text="0" textAlignment="CENTER" wrappingWidth="185.0">
+                        <Text fx:id="currentBestText" layoutX="68.0" layoutY="32.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="text-id" text="test" textAlignment="CENTER">
                            <font>
                               <Font name="Roboto" size="34.0" />
                            </font></Text>
-                        <Text fx:id="currentBestText" layoutX="305.0" layoutY="48.0" strokeType="OUTSIDE" strokeWidth="0.0" text="test" textAlignment="CENTER">
+                        <Text fx:id="timeElapsedText" layoutX="197.0" layoutY="33.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="text-id" text="0" textAlignment="CENTER" wrappingWidth="202.0">
                            <font>
                               <Font name="Roboto" size="34.0" />
                            </font></Text>
-                        <Text fx:id="timeElapsedText" layoutX="436.0" layoutY="49.0" strokeType="OUTSIDE" strokeWidth="0.0" text="0" textAlignment="CENTER" wrappingWidth="202.0">
+                        <Text fx:id="runningText" layoutX="391.0" layoutY="32.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="text-id" text="Running" textAlignment="CENTER" wrappingWidth="230.0000135526061">
                            <font>
-                              <Font name="Roboto" size="34.0" />
-                           </font></Text>
+                              <Font size="34.0" />
+                           </font>
+                        </Text>
+                        <Text layoutX="475.0" layoutY="66.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="text-id" text="Status" textAlignment="CENTER">
+                           <font>
+                              <Font name="Roboto" size="20.0" />
+                           </font>
+                        </Text>
                      </children>
                   </Pane>
                </children></VBox>
-            <VBox fx:id="schedulesBox" prefHeight="187.0" prefWidth="189.0" style="-fx-border-color: yellow;" />
-            <VBox fx:id="memBox" prefHeight="187.0" prefWidth="205.0" style="-fx-border-color: red;" />
+            <VBox fx:id="schedulesBox" prefHeight="187.0" prefWidth="189.0" />
+            <VBox fx:id="memBox" prefHeight="187.0" prefWidth="205.0" />
          </children>
       </HBox>
    </children>
