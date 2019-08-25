@@ -80,6 +80,7 @@ public class MainController {
     private double startTime;
     private double currentTime;
     private double finishTime;
+    private boolean pollingRanOnce = false;
 
     private CLIConfig config;
     private AlgorithmMonitor monitor;
@@ -115,6 +116,15 @@ public class MainController {
 
     private void startPolling() {
         Timeline poller = new Timeline(new KeyFrame(Duration.millis(50), event -> {
+            if(monitor.isFinished()){
+                runningText.setStyle("-fx-fill: rgb(15,157,88);");
+                runningText.setText("Done!");
+                stopTimer();
+
+                if(pollingRanOnce) {
+                    return;
+                }
+            }
             double memoryUsage = (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory())/(1000000d);
             memoryTile.setValue(memoryUsage);
 
@@ -139,11 +149,7 @@ public class MainController {
             allocationTile.addChartData(new ChartData(monitor.getAllocationsExpanded()));
             orderTile.addChartData(new ChartData(monitor.getOrderingsExpanded()));
 
-            if(monitor.isFinished()){
-                runningText.setStyle("-fx-fill: rgb(15,157,88);");
-                runningText.setText("Done!");
-                stopTimer();
-            }
+            pollingRanOnce = true;
         }));
         poller.setCycleCount(Animation.INDEFINITE);
         poller.play();
