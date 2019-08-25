@@ -30,14 +30,19 @@ public class TopologicalSortAlgorithm implements SchedulingAlgorithm {
             int bestStartTime = Integer.MAX_VALUE;
             for (int procNum = 0; procNum < ctx.getProcessorCount(); procNum++) {
                 int dataReadyTime = 0;
-                for (Map.Entry<Node, Integer> parentEntry : node.getIncomingEdges().entrySet()) {
-                    ScheduledTask parentTask = scheduledTaskMap.get(parentEntry.getKey());
+
+                for(int i = 0; i < node.getIncomingEdgeNodes().length; ++i) {
+                    Node edgeNode = node.getIncomingEdgeNodes()[i];
+                    int edgeWeight = node.getIncomingEdgeWeights()[i];
+
+                    ScheduledTask parentTask = scheduledTaskMap.get(edgeNode);
                     if (parentTask.getProcessorId() != procNum) {
-                        dataReadyTime = Math.max(dataReadyTime, parentTask.getFinishTime() + parentEntry.getValue());
+                        dataReadyTime = Math.max(dataReadyTime, parentTask.getFinishTime() + edgeWeight);
                     } else {
                         dataReadyTime = Math.max(dataReadyTime, parentTask.getFinishTime());
                     }
                 }
+
                 int startTime = Math.max(earliestProcessorFree[procNum], dataReadyTime);
                 if (startTime < bestStartTime) {
                     bestStartTime = startTime;

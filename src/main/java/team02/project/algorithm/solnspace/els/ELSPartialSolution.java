@@ -69,8 +69,8 @@ public class ELSPartialSolution implements PartialSolution, Iterable<ScheduledTa
             }
 
             // not a candidate if it has incoming edges which are not satisfied
-            for(val edge : node.getIncomingEdges().entrySet()) {
-                if(!nodesAlreadyInSchedule.contains(edge.getKey())) {
+            for(val edge : node.getIncomingEdgeNodes()) {
+                if(!nodesAlreadyInSchedule.contains(edge)) {
                     continue outer;
                 }
             }
@@ -90,9 +90,25 @@ public class ELSPartialSolution implements PartialSolution, Iterable<ScheduledTa
 
                 // constrain based on transfer times
                 for(val schedule : this) {
-                    if(schedule.getProcessorId() != i && node.getIncomingEdges().containsKey(schedule.getTask())) {
+                    if(schedule.getProcessorId() != i) {
+                        // incoming edge contains getTask
+                        boolean found = false;
+                        int transferTime = 0;
+                        int j = 0;
+                        for(Node edge : node.getIncomingEdgeNodes()) {
+                            if(edge.equals(schedule.getTask())) {
+                                found = true;
+                                transferTime = node.getIncomingEdgeWeights()[j];
+                                break;
+                            }
+                            ++j;
+                        }
+
+                        if(!found) {
+                            break;
+                        }
+
                         val finishTime = schedule.getStartTime() + schedule.getTask().getWeight();
-                        val transferTime = node.getIncomingEdges().get(schedule.getTask());
                         startTime = Math.max(startTime, finishTime + transferTime);
                     }
                 }
@@ -156,7 +172,7 @@ public class ELSPartialSolution implements PartialSolution, Iterable<ScheduledTa
 
     @Override
     public boolean isComplete(){
-        return depth == context.getTaskGraph().getNodes().size();
+        return depth == context.getTaskGraph().getNodes().length;
     }
 
     @Override

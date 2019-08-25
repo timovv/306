@@ -92,18 +92,18 @@ public class APartialSolution implements PartialSolution {
         Set<PartialSolution> output = new HashSet<>();
 
         // get the next one from nodesToSchedule
-        Node next = getContext().getTaskGraph().getNodes().get(getDepth());
+        Node next = getContext().getTaskGraph().getNodes()[getDepth()];
 
         // Full mapping of Nodes -> Processors
         Map<Node, Integer> processorLookupTable = new HashMap<>();
 
         // Contains the TLA values of all allocated Nodes
-        Map<Node, Integer> tla = new HashMap<>();
+        int[] tla = new int[context.getTaskGraph().getNodes().length];
 
         APartialSolution current = this;
         while (!current.isEmpty()) {
             processorLookupTable.put(current.getTask(), current.getProcessor());
-            tla.put(current.getTask(), current.getTopLevelAllocated());
+            tla[current.getTask().getIndex()] = current.getTopLevelAllocated();
             current = current.getParent();
         }
 
@@ -114,11 +114,15 @@ public class APartialSolution implements PartialSolution {
             newLoads[i] += next.getWeight();
 
             int newTopLevelAllocated = 0;
-            for (Map.Entry<Node, Integer> pred : next.getIncomingEdges().entrySet()) {
-                if (!processorLookupTable.getOrDefault(pred.getKey(), i).equals(i)) {
-                    newTopLevelAllocated = Math.max(newTopLevelAllocated, tla.get(pred.getKey()) + pred.getValue());
+
+            for(int j = 0; j < next.getIncomingEdgeNodes().length; ++j) {
+                Node edgeNode = next.getIncomingEdgeNodes()[j];
+                int edgeWeight = next.getIncomingEdgeWeights()[j];
+
+                if (!processorLookupTable.getOrDefault(edgeNode, i).equals(i)) {
+                    newTopLevelAllocated = Math.max(newTopLevelAllocated, tla[edgeNode.getIndex()] + edgeWeight);
                 } else {
-                    newTopLevelAllocated =  Math.max(newTopLevelAllocated, pred.getKey().getTopLevel());
+                    newTopLevelAllocated =  Math.max(newTopLevelAllocated, edgeNode.getTopLevel());
                 }
             }
 
@@ -142,8 +146,10 @@ public class APartialSolution implements PartialSolution {
             newLoads[processorsWithTasks] += next.getWeight();
 
             int newTopLevelAllocated = 0;
-            for (Map.Entry<Node, Integer> pred : next.getIncomingEdges().entrySet()) {
-                newTopLevelAllocated = Math.max(newTopLevelAllocated, tla.get(pred.getKey()) + pred.getValue());
+            for(int i = 0; i < next.getIncomingEdgeNodes().length; ++i) {
+                Node edgeNode = next.getIncomingEdgeNodes()[i];
+                int edgeWeight = next.getIncomingEdgeWeights()[i];
+                newTopLevelAllocated = Math.max(newTopLevelAllocated, tla[edgeNode.getIndex()] + edgeWeight);
             }
 
             output.add(new APartialSolution(
@@ -178,7 +184,7 @@ public class APartialSolution implements PartialSolution {
      * @return true if this allocation is complete, otherwise false.
      */
     public boolean isCompleteAllocation() {
-        return getDepth() == getContext().getTaskGraph().getNodes().size();
+        return getDepth() == getContext().getTaskGraph().getNodes().length;
     }
 
     /**
