@@ -12,9 +12,9 @@ public interface Graph {
 
     /**
      * Get all nodes in the graph
-     * @return A {@link List} of {@link Node}
+     * @return An array of {@link Node} by index
      */
-    List<? extends Node> getNodes();
+    Node[] getNodes();
 
     /**
      * Lookup and return a node via it's id

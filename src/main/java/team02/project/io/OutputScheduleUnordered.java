@@ -30,8 +30,11 @@ public class OutputScheduleUnordered {
                     + ", Start=" + task.getStartTime()
                     + ", Processor=" + (task.getProcessorId() + 1) + "];";
             writer.println(nodeStr);
-            for (val edge : task.getTask().getIncomingEdges().entrySet()) {
-                String edgeStr = "\t" + edge.getKey().getId() + " -> " + task.getTask().getId() + " [Weight=" + edge.getValue() + "];";
+            for(int i = 0; i < task.getTask().getIncomingEdgeNodes().length; ++i) {
+                val node = task.getTask().getIncomingEdgeNodes()[i];
+                int weight = task.getTask().getIncomingEdgeWeights()[i];
+
+                String edgeStr = "\t" + node.getId() + " -> " + task.getTask().getId() + " [Weight=" + weight + "];";
                 writer.println(edgeStr);
             }
         }

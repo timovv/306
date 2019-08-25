@@ -148,16 +148,21 @@ public class AOCompleteSolution implements PartialSolution {
                 OPartialSolution solution = processorTasks.getFirst();
 
                 int startTime = lastFinishTimes[solution.getProcessor()];
-                for(Map.Entry<Node, Integer> edge : solution.getTask().getIncomingEdges().entrySet()) {
-                    ScheduledTask scheduled = scheduleMap.get(edge.getKey());
+
+                for(int i = 0; i < solution.getTask().getIncomingEdgeNodes().length; ++i) {
+                    Node edgeNode = solution.getTask().getIncomingEdgeNodes()[i];
+                    int edgeWeight = solution.getTask().getIncomingEdgeWeights()[i];
+
+                    ScheduledTask scheduled = scheduleMap.get(edgeNode);
                     if(scheduled == null) {
                         continue outer; // can't schedule this node right now
                     }
 
                     startTime = Math.max(
                             startTime,
-                            scheduled.getFinishTime() + (scheduled.getProcessorId() == solution.getProcessor() ? 0 : edge.getValue())
+                            scheduled.getFinishTime() + (scheduled.getProcessorId() == solution.getProcessor() ? 0 : edgeWeight)
                     );
+
                 }
 
                 ScheduledTask sc = new ScheduledTask(solution.getProcessor(), startTime, solution.getTask());

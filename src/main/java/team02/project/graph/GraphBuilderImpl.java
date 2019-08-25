@@ -28,15 +28,17 @@ public class GraphBuilderImpl implements GraphBuilder {
         LinkedHashSet<MutableNode> order = new LinkedHashSet<>();
         LinkedHashSet<MutableNode> reverseOrder = new LinkedHashSet<>();
 
-        for (MutableNode node : wip.getNodes()) {
+        for(MutableNode node : wip.getNodesList()) {
             topologicalVisit(order, node);
             reverseTopologicalVisit(reverseOrder, node);
         }
 
-        wip.setNodes(new ArrayList<>(order)); // LinkedHashSet is not a List =(
+        wip.setNodesList(new ArrayList<>(order)); // LinkedHashSet is not a List =(
 
         calculateBottomLevels();
         calculateTopLevels();
+
+        wip.initArrays();
         return wip;
     }
 
@@ -93,7 +95,7 @@ public class GraphBuilderImpl implements GraphBuilder {
      */
     private void calculateBottomLevels() {
         // do the BFS to get bottom levels of wip
-        Queue<MutableNode> queue = wip.getNodes().stream()
+        Queue<MutableNode> queue = wip.getNodesList().stream()
                 .filter(x -> x.getOutgoingEdges().isEmpty())
                 .collect(Collectors.toCollection(LinkedList::new));
 
@@ -116,7 +118,7 @@ public class GraphBuilderImpl implements GraphBuilder {
      * Sets the path from the top of the graph to each node
      */
     private void calculateTopLevels() {
-        Queue<MutableNode> queue = wip.getNodes().stream()
+        Queue<MutableNode> queue = wip.getNodesList().stream()
                 .filter(x -> x.getIncomingEdges().isEmpty())
                 .collect(Collectors.toCollection(LinkedList::new));
 

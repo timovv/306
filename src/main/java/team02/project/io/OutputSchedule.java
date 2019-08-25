@@ -42,8 +42,8 @@ public class OutputSchedule {
                     + ", Processor=" + (scheduledTaskHashMap.get(n.getId()).getProcessorId() + 1) + "];";
             writer.println(nodeStr);
 
-            for (val edge : n.getIncomingEdges().entrySet()) {
-                String edgeStr = "\t" + edge.getKey().getId() + " -> " + n.getId() + " [Weight=" + edge.getValue() + "];";
+            for(int i = 0; i < n.getIncomingEdgeNodes().length; ++i) {
+                String edgeStr = "\t" + n.getIncomingEdgeNodes()[i].getId() + " -> " + n.getId() + " [Weight=" + n.getIncomingEdgeWeights()[i] + "];";
                 writer.println(edgeStr);
             }
         }
