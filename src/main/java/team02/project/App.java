@@ -7,7 +7,7 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 import team02.project.algorithm.*;
 import team02.project.algorithm.solnspace.ao.AOSolutionSpace;
-import team02.project.algorithm.stats.AlgorithmStatsListener;
+import team02.project.algorithm.AlgorithmMonitor;
 import team02.project.cli.CLIConfig;
 import team02.project.cli.CLIException;
 import team02.project.cli.CLIParser;
@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Optional;
 
 import static team02.project.cli.CLIConstants.*;
 
@@ -33,7 +32,7 @@ public class App extends Application{
     private static int EXIT_FAILURE = 1;
 
     private static CLIConfig config;
-    private static AlgorithmStatsListener listener;
+    private static AlgorithmMonitor monitor;
     private static Path inputFile;
     private static Path outputFile;
 
@@ -109,7 +108,7 @@ public class App extends Application{
                 + config.numberOfScheduleProcessors() +
                 " processors on a graph of " + graph.getNodes().size() + " nodes");
         // TODO: command-line switch to allow users to select algorithm
-        SchedulingAlgorithm algorithm = new SequentialBranchBoundAlgorithm(new AOSolutionSpace(), Optional.ofNullable(listener));
+        SchedulingAlgorithm algorithm = new SequentialBranchBoundAlgorithm(new AOSolutionSpace(), monitor);
         return algorithm.calculateOptimal(ctx);
     }
 
@@ -152,10 +151,11 @@ public class App extends Application{
 
             // initialise everything
             mainController.injectConfig(config);
+            monitor = new AlgorithmMonitor(null, 0, 0, 0);
+            mainController.injectMonitor(monitor);
             mainController.init();
 
             // Register MainController as a listener;
-            listener = mainController;
 
             // Run the algorithm on another thread
             new Thread(() -> {

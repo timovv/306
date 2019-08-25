@@ -1,16 +1,12 @@
 package team02.project.algorithm;
 
-import javafx.application.Platform;
 import lombok.val;
 import team02.project.algorithm.solnspace.PartialSolution;
 import team02.project.algorithm.solnspace.SolutionSpace;
 import team02.project.algorithm.solnspace.ao.APartialSolution;
-import team02.project.algorithm.stats.AlgorithmStats;
-import team02.project.algorithm.stats.AlgorithmStatsListener;
 import team02.project.graph.Node;
 
 import java.util.LinkedList;
-import java.util.Optional;
 
 /**
  * Bounds any complete schedules which exceed the current upper bound
@@ -18,14 +14,16 @@ import java.util.Optional;
 public class SequentialBranchBoundAlgorithm implements SchedulingAlgorithm {
 
     private SolutionSpace solutionSpace;
-    private Optional<AlgorithmStatsListener> listener;
-    private static final long VISUALIZATION_REFRESH = 10000;
+    private AlgorithmMonitor monitor = null;
 
-    public SequentialBranchBoundAlgorithm(SolutionSpace solutionSpace, Optional<AlgorithmStatsListener> listener) {
+    public SequentialBranchBoundAlgorithm(SolutionSpace solutionSpace) {
         this.solutionSpace = solutionSpace;
-        this.listener = listener;
     }
 
+    public SequentialBranchBoundAlgorithm(SolutionSpace solutionSpace, AlgorithmMonitor monitor) {
+        this.solutionSpace = solutionSpace;
+        this.monitor = monitor;
+    }
 
     @Override
     public Schedule calculateOptimal(SchedulingContext ctx) {
@@ -33,26 +31,28 @@ public class SequentialBranchBoundAlgorithm implements SchedulingAlgorithm {
         int ubound = simpleListSchedule.getFinishTime();
         PartialSolution best = null;
 
-        long scheduleCreated = 0;
+        long schedulesCreated = 0;
         long allocationsExpanded = 0;
         long orderingsExpanded = 0;
-        int iteration = 0;
 
         LinkedList<PartialSolution> scheduleStack = new LinkedList<>();
         scheduleStack.add(solutionSpace.getRoot(ctx));
         while(!scheduleStack.isEmpty()) {
             val schedule = scheduleStack.pop();
             if (schedule.isComplete()) { // don't expand
-                scheduleCreated++;
+                schedulesCreated++;
                 val estimate = schedule.getEstimatedFinishTime();
                 if(estimate < ubound) { // update the upper bound
                     best = schedule;
+                    if(monitor != null){
+                        monitor.setCurrentBest(best.makeComplete());
+                    }
                     ubound = estimate;
                 }
                 continue;
             }
 
-            if (listener.isPresent()) {
+            if (monitor != null) {
                 if (schedule instanceof APartialSolution) {
                     allocationsExpanded++;
                 } else {
@@ -67,20 +67,11 @@ public class SequentialBranchBoundAlgorithm implements SchedulingAlgorithm {
                 }
             }
 
-            if (iteration == VISUALIZATION_REFRESH && listener.isPresent()) {
-                // todo there is probably a cleaner way to do this
-                if (best != null) {
-                    // copy em for the other thread
-                    long finalAllocationsExpanded = allocationsExpanded;
-                    long finalOrderingsExpanded = orderingsExpanded;
-                    long finalScheduleCreated = scheduleCreated;
-                    PartialSolution finalBest = best;
-                    Platform.runLater(() -> listener.get().update(new AlgorithmStats(finalBest.makeComplete(),
-                            finalAllocationsExpanded, finalOrderingsExpanded, finalScheduleCreated)));
-                }
-                iteration = 0;
+            if (monitor !=  null) {
+                monitor.setAllocationsExpanded(allocationsExpanded);
+                monitor.setOrderingsExpanded(orderingsExpanded);
+                monitor.setCompleteSchedules(schedulesCreated);
             }
-            iteration++;
         }
 
         if(best == null) {

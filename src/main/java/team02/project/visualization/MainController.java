@@ -7,49 +7,35 @@ import eu.hansolo.tilesfx.colors.Bright;
 import eu.hansolo.tilesfx.colors.Dark;
 import eu.hansolo.tilesfx.tools.FlowGridPane;
 import javafx.animation.Animation;
-import javafx.animation.AnimationTimer;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
-import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.geometry.Pos;
 import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.chart.XYChart.Series;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.Tooltip;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Stop;
-import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 import javafx.scene.text.TextFlow;
 import javafx.util.Duration;
-import team02.project.App;
 import team02.project.algorithm.Schedule;
 import team02.project.algorithm.ScheduledTask;
-import team02.project.algorithm.SchedulingContext;
-import team02.project.algorithm.stats.AlgorithmStats;
-import team02.project.algorithm.stats.AlgorithmStatsListener;
+import team02.project.algorithm.AlgorithmMonitor;
 import team02.project.cli.CLIConfig;
-import team02.project.graph.Graph;
 import team02.project.visualization.GanttChart.ExtraData;
 
-import javax.sound.midi.Soundbank;
-import java.io.File;
-import java.nio.file.Paths;
 import java.util.*;
 
 import static javafx.scene.paint.Color.rgb;
-import static team02.project.App.*;
 
-public class MainController implements AlgorithmStatsListener {
+public class MainController {
 
     @FXML
     private VBox statsBox;
@@ -91,9 +77,14 @@ public class MainController implements AlgorithmStatsListener {
     private double finishTime;
 
     private CLIConfig config;
+    private AlgorithmMonitor monitor;
     
     public void injectConfig(CLIConfig config){
         this.config = config;
+    }
+
+    public void injectMonitor(AlgorithmMonitor monitor) {
+        this.monitor = monitor;
     }
     
     public void init() {
@@ -106,13 +97,19 @@ public class MainController implements AlgorithmStatsListener {
         setUpGanttBox();
         setUpStatsBox();
 
-        // monitor and update view of memory on another thread
-        Timeline memoryHandler = new Timeline(new KeyFrame(Duration.seconds(1), event -> {
+        Timeline poller = new Timeline(new KeyFrame(Duration.millis(50), event -> {
             double memoryUsage = (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory())/(1000000d);
             memoryTile.setValue(memoryUsage);
+            if(monitor.getCurrentBest() != null){
+                updateGannt(monitor.getCurrentBest());
+            }
+            currentBestText.setText("" + monitor.getCurrentBest().getFinishTime());
+            updateNumSchedules(monitor.getCompleteSchedules());
+            allocationTile.setChartData(new ChartData(monitor.getAllocationsExpanded()));
+            orderTile.setChartData(new ChartData(monitor.getOrderingsExpanded()));
         }));
-        memoryHandler.setCycleCount(Animation.INDEFINITE);
-        memoryHandler.play();
+        poller.setCycleCount(Animation.INDEFINITE);
+        poller.play();
 
         // initialize the value in order for setValue
         memoryTile.setValue(0);
@@ -180,7 +177,7 @@ public class MainController implements AlgorithmStatsListener {
         schedulesBox.getChildren().addAll(buildFlowGridPane(this.scheduleTile));
     }
 
-    private void updateNumSchedules(int i){
+    private void updateNumSchedules(long i){
         schedCreatedText.setText(String.valueOf(i));
     }
 
@@ -252,8 +249,6 @@ public class MainController implements AlgorithmStatsListener {
         chart.setMaxHeight(ganttBox.getPrefHeight());
         ganttBox.getChildren().add(chart);
 
-        //TODO Remove me uwu
-//        testGannt();
     }
 
     private void updateGannt(Schedule bestSchedule){
@@ -289,31 +284,18 @@ public class MainController implements AlgorithmStatsListener {
         currentBestText.setText(""+bestSchedule.getFinishTime());
     }
 
-    //TODO ############# REMOVE ME
-//    private void testGannt(){
-//        System.out.println("Remove the test Gantt method ");
+//    @Override
+//    public void update(AlgorithmStats stats) {
+//        // take new timestamp
+//        System.out.println("Allocations: " + stats.getAllocationsExpanded());
+//        System.out.println("Orderings: " + stats.getOrderingsExpanded());
 //
-//        Graph graph = createGraph(Paths.get(config.inputDOTFile()));
-//        SchedulingContext ctx = new SchedulingContext(graph, config.numberOfScheduleProcessors());
-//        Schedule maybeOptimal = calculateSchedule(config, graph, ctx);
-//        System.out.print(maybeOptimal.getFinishTime());
-//        writeOutput(Paths.get(config.outputDOTFile()),ctx,maybeOptimal);
+//        System.out.println("Complete schedules: " + stats.getCompleteSchedules());
 //
-//        updateGannt(maybeOptimal);
+//        // use old timestamp and cached values to update stuff
+//
+//        // cache new values
+//
+//        updateGannt(stats.getCurrentBest());
 //    }
-
-    @Override
-    public void update(AlgorithmStats stats) {
-        // take new timestamp
-        System.out.println("Allocations: " + stats.getAllocationsExpanded());
-        System.out.println("Orderings: " + stats.getOrderingsExpanded());
-
-        System.out.println("Complete schedules: " + stats.getCompleteSchedules());
-
-        // use old timestamp and cached values to update stuff
-
-        // cache new values
-
-        updateGannt(stats.getCurrentBest());
-    }
 }
