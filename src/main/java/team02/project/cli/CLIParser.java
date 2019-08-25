@@ -4,7 +4,14 @@ import org.apache.commons.cli.*;
 
 import static team02.project.cli.CLIConstants.*;
 
+
 public class CLIParser {
+    /**
+     * @param args
+     * @return A config object {@link CLIConfig} which contains all the information about arguments and optional
+     * arguments the user has given
+     * @throws CLIException
+     */
     public CLIConfig parse(String[] args) throws CLIException {
         if (invalidNumberOfArgs(args.length)) {
             throw new CLIException(INVALID_NUMBER_OF_ARGS_MSG);
@@ -29,6 +36,10 @@ public class CLIParser {
         return config;
     }
 
+    /**
+     * @return A string which contains all the help information required for the command line when
+     * the user passes in invalid arguments
+     */
     public String getHelp() {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < 85; i++) {
@@ -59,6 +70,12 @@ public class CLIParser {
     }
 
 
+    /**
+     *
+     * @param P Number of processors in string format
+     * @return An integer representation of the number of processors
+     * @throws CLIException
+     */
     private int getScheduleProcessors(String P) throws CLIException {
         int scheduleProcessors = DEFAULT_SCHEDULE_PROCESSORS;
 
@@ -71,6 +88,11 @@ public class CLIParser {
         return scheduleProcessors;
     }
 
+    /**
+     * @param cmd
+     * @return A value of how many parallel cores the user wants the algorithm to run on
+     * @throws CLIException
+     */
     private int getParallelCores(CommandLine cmd) throws CLIException {
         int parallelCores = DEFAULT_PARALLEL_CORES;
 
@@ -87,10 +109,19 @@ public class CLIParser {
 
     }
 
+    /**
+     * @param cmd
+     * @return A value specifying whether or not the user want a visualization or not
+     */
     private boolean getVisualizeOption(CommandLine cmd) {
         return cmd.hasOption(VISUALIZE_FLAG);
     }
 
+
+    /**
+     * @param cmd
+     * @return The output file name the user wants
+     */
     private String getOutputFileName(CommandLine cmd) {
         String outputFileName = DEFAULT_OUTPUT_DOT_FILE_NAME;
 
@@ -102,10 +133,17 @@ public class CLIParser {
         return outputFileName;
     }
 
+    /**
+     * @param length of the arguments
+     * @return a boolean telling us whether the number of arguments is valid or not
+     */
     private boolean invalidNumberOfArgs(int length) {
         return length < 2;
     }
 
+    /**
+     * @return The options object passed into parsing the optional args
+     */
     private Options getOptions() {
         Options options = new Options();
 
@@ -118,6 +156,10 @@ public class CLIParser {
         return options;
     }
 
+    /**
+     * @param args The arguments passed by the user
+     * @return Only the <i> optional </i> arguments
+     */
     private String[] getOptionalArgs(String[] args) {
         String[] optional = new String[args.length - 2];
 
@@ -128,6 +170,11 @@ public class CLIParser {
         return optional;
     }
 
+    /**
+     * @param optionalArgs All the optional arguments
+     * @return CommandLine object which contains information about the optional arguments
+     * @throws CLIException
+     */
     private CommandLine parseOptionalArgs(String[] optionalArgs) throws CLIException {
         CommandLineParser clp = new DefaultParser();
         CommandLine cmd;
@@ -146,6 +193,9 @@ public class CLIParser {
         return cmd;
     }
 
+    /**
+     * @return A string representation of the jar file when running the application
+     */
     private String getJarFileName() {
         return new java.io.File(CLIParser.class.getProtectionDomain()
                 .getCodeSource()
