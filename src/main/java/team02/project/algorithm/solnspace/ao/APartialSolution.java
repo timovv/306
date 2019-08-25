@@ -5,7 +5,11 @@ import team02.project.algorithm.SchedulingContext;
 import team02.project.algorithm.solnspace.PartialSolution;
 import team02.project.graph.Node;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * The allocation part of the solution space. This represents the top part of the solution space tree, where tasks are
@@ -100,10 +104,21 @@ public class APartialSolution implements PartialSolution {
         // Contains the TLA values of all allocated Nodes
         Map<Node, Integer> tla = new HashMap<>();
 
+        // Min and Max TLA in for all nodes allocated to each processor
+        int[] minTLA = new int[context.getProcessorCount()];
+        int[] minBLA = new int[context.getProcessorCount()];
+
         APartialSolution current = this;
         while (!current.isEmpty()) {
             processorLookupTable.put(current.getTask(), current.getProcessor());
             tla.put(current.getTask(), current.getTopLevelAllocated());
+
+            minTLA[current.getProcessor()] = Math.min(minTLA[current.getProcessor()],
+                    current.getTopLevelAllocated() - current.getTask().getWeight());
+
+            minBLA[current.getProcessor()] = Math.min(minBLA[current.getProcessor()],
+                    current.getTask().getBottomLevel() - current.getTask().getWeight());
+
             current = current.getParent();
         }
 
@@ -120,6 +135,13 @@ public class APartialSolution implements PartialSolution {
                 } else {
                     newTopLevelAllocated =  Math.max(newTopLevelAllocated, pred.getKey().getTopLevel());
                 }
+            }
+
+            minTLA[i] = Math.min(minTLA[i], newTopLevelAllocated);
+            minBLA[i] = Math.min(minBLA[i], next.getBottomLevel());
+
+            for (int proc = 0; proc < newLoads.length; proc++) {
+                newLoads[proc] += minBLA[proc] + minTLA[proc];
             }
 
             output.add(new APartialSolution(
@@ -144,6 +166,13 @@ public class APartialSolution implements PartialSolution {
             int newTopLevelAllocated = 0;
             for (Map.Entry<Node, Integer> pred : next.getIncomingEdges().entrySet()) {
                 newTopLevelAllocated = Math.max(newTopLevelAllocated, tla.get(pred.getKey()) + pred.getValue());
+            }
+
+            minTLA[processorsWithTasks] = Math.min(minTLA[processorsWithTasks], newTopLevelAllocated);
+            minBLA[processorsWithTasks] = Math.min(minBLA[processorsWithTasks], next.getBottomLevel());
+
+            for (int proc = 0; proc < newLoads.length; proc++) {
+                newLoads[proc] += minBLA[proc] + minTLA[proc];
             }
 
             output.add(new APartialSolution(
@@ -243,4 +272,9 @@ public class APartialSolution implements PartialSolution {
     public int getTopLevelAllocated() {
         return topLevelAllocated;
     }
+
+    public int getCriticalPathAllocated() {
+        return criticalPathAllocated;
+    }
+
 }
