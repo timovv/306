@@ -47,6 +47,9 @@ dependencies {
     // This dependency is found on compile classpath of this component and consumers.
     compile 'com.google.guava:guava:23.0'
 
+    // https://mvnrepository.com/artifact/eu.hansolo/tilesfx
+    compile group: 'eu.hansolo', name: 'tilesfx', version: '1.6.8'
+
     compile group: 'commons-cli', name: 'commons-cli', version: '1.4'
 
     // Use JUnit test framework
