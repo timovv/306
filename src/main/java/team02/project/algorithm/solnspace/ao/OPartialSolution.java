@@ -88,14 +88,12 @@ public class OPartialSolution implements PartialSolution {
             return Collections.singleton(new AOCompleteSolution(this));
         }
 
-        Set<PartialSolution> output = expandProcessor(processor);
-
-        if(output.isEmpty()) {
-            // no tasks left on that processor, on to the next one.
-            output = expandProcessor(processor + 1);
+        int nextProcessor = (processor + 1) % context.getProcessorCount();
+        while((allocation.getAllocationBits()[nextProcessor] & orderedBits) == allocation.getAllocationBits()[nextProcessor]) {
+            nextProcessor = (nextProcessor + 1) % context.getProcessorCount();
         }
 
-        return output;
+        return expandProcessor(nextProcessor);
     }
 
     /**
