@@ -20,15 +20,19 @@ public class Allocation {
      */
     private final List<Set<Node>> tasks;
 
+    private final long[] allocationBits;
+
     private final int[] loadsPerProcessor;
     private final int[] processors;
     private final int[] topLevelAllocated;
     private final int[] bottomLevelAllocated;
     private final int estimatedCost;
 
-    private Allocation(List<Set<Node>> tasks, int[] loadsPerProcessor, int[] processors,
+
+    private Allocation(List<Set<Node>> tasks, long[] allocationBits, int[] loadsPerProcessor,  int[] processors,
                        int[] topLevelAllocated, int[] bottomLevelAllocated, int estimatedCost) {
         this.tasks = tasks;
+        this.allocationBits = allocationBits;
         this.loadsPerProcessor = loadsPerProcessor;
         this.processors = processors;
         this.topLevelAllocated = topLevelAllocated;
@@ -97,7 +101,15 @@ public class Allocation {
                 queue.offer(node2);
             }
         }
-        return new Allocation(tasks, loadsPerProcessor,  processorLookup, topLevelAllocated,
+
+        long[] allocationBits = new long[ctx.getProcessorCount()];
+        for(int i = 0; i < tasks.size(); ++i) {
+            for(Node node : tasks.get(i)) {
+                allocationBits[i] |= (1 << node.getIndex());
+            }
+        }
+
+        return new Allocation(tasks, allocationBits, loadsPerProcessor,  processorLookup, topLevelAllocated,
                 bottomLevelAllocated, alloc.getEstimatedFinishTime());
     }
 
@@ -147,5 +159,9 @@ public class Allocation {
      */
     public int getEstimatedFinishTime() {
         return estimatedCost;
+    }
+
+    public long[] getAllocationBits() {
+        return allocationBits;
     }
 }
