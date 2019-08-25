@@ -3,19 +3,16 @@ package team02.project.algorithm;
 import lombok.val;
 import team02.project.algorithm.solnspace.PartialSolution;
 import team02.project.algorithm.solnspace.SolutionSpace;
-import team02.project.algorithm.solnspace.ao.AOSolutionSpace;
 
-import javax.naming.PartialResultException;
 import java.util.LinkedList;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveAction;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class ParallelBranchAndBound implements SchedulingAlgorithm {
     private static final int SYNC_COUNT = 10000;
     private static final int SEARCH_THRESHOLD = 10;
 
-    private int ubound = Integer.MAX_VALUE;
+    private int ubound;
     private PartialSolution best = null;
     private SolutionSpace solutionSpace;
     private int parallelism;
@@ -34,12 +31,18 @@ public class ParallelBranchAndBound implements SchedulingAlgorithm {
     @Override
     public Schedule calculateOptimal(SchedulingContext ctx) {
         ; // this should be passed in later
+        Schedule simpleListSchedule = new TopologicalSortAlgorithm().calculateOptimal(ctx);
+        ubound = simpleListSchedule.getFinishTime();
         LinkedList<PartialSolution> scheduleStack = new LinkedList<>();
         scheduleStack.add(solutionSpace.getRoot(ctx));
         ForkSearch fs = new ForkSearch(scheduleStack);
         ForkJoinPool pool = new ForkJoinPool(parallelism);
         pool.invoke(fs);
-        return best.makeComplete();
+        if (best == null) {
+            return simpleListSchedule;
+        } else {
+            return best.makeComplete();
+        }
     }
 
     private class ForkSearch extends RecursiveAction {
