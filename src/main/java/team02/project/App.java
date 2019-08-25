@@ -58,6 +58,7 @@ public class App extends Application{
             // run it normally
             runAlgorithm();
         }
+        System.exit(0);
     }
 
     private static void runAlgorithm() {

@@ -25,7 +25,10 @@ public class OutputScheduleUnordered {
         writer.println("digraph \"" + pathName.getFileName() + "\" {");
 
         for (var task : optimalSchedule.getTasks()) {
-            String nodeStr = "\t" + task.getTask().getId() + " [Weight=" + task.getTask().getWeight() + ", Start=" + task.getStartTime() + ", Processor=" + task.getProcessorId() + "];";
+            String nodeStr = "\t" + task.getTask().getId()
+                    + " [Weight=" + task.getTask().getWeight()
+                    + ", Start=" + task.getStartTime()
+                    + ", Processor=" + (task.getProcessorId() + 1) + "];";
             writer.println(nodeStr);
             for (val edge : task.getTask().getIncomingEdges().entrySet()) {
                 String edgeStr = "\t" + edge.getKey().getId() + " -> " + task.getTask().getId() + " [Weight=" + edge.getValue() + "];";
