@@ -10,6 +10,7 @@ import javafx.animation.Animation;
 import javafx.animation.AnimationTimer;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -34,10 +35,13 @@ import team02.project.App;
 import team02.project.algorithm.Schedule;
 import team02.project.algorithm.ScheduledTask;
 import team02.project.algorithm.SchedulingContext;
+import team02.project.algorithm.stats.AlgorithmStats;
+import team02.project.algorithm.stats.AlgorithmStatsListener;
 import team02.project.cli.CLIConfig;
 import team02.project.graph.Graph;
 import team02.project.visualization.GanttChart.ExtraData;
 
+import javax.sound.midi.Soundbank;
 import java.io.File;
 import java.nio.file.Paths;
 import java.util.*;
@@ -45,7 +49,7 @@ import java.util.*;
 import static javafx.scene.paint.Color.rgb;
 import static team02.project.App.*;
 
-public class MainController{
+public class MainController implements AlgorithmStatsListener {
 
     @FXML
     private VBox statsBox;
@@ -86,7 +90,14 @@ public class MainController{
     private double currentTime;
     private double finishTime;
 
+    private CLIConfig config;
+    
+    public void injectConfig(CLIConfig config){
+        this.config = config;
+    }
+    
     public void init() {
+        Objects.requireNonNull(config);
 
         setUpMemoryTile();
         setUpAllocationTile();
@@ -98,8 +109,6 @@ public class MainController{
         // monitor and update view of memory on another thread
         Timeline memoryHandler = new Timeline(new KeyFrame(Duration.seconds(1), event -> {
             double memoryUsage = (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory())/(1000000d);
-            allocationTile.addChartData(new ChartData(Math.random() * 1000));
-            orderTile.addChartData(new ChartData(Math.random() * 1000));
             memoryTile.setValue(memoryUsage);
         }));
         memoryHandler.setCycleCount(Animation.INDEFINITE);
@@ -107,7 +116,6 @@ public class MainController{
 
         // initialize the value in order for setValue
         memoryTile.setValue(0);
-
     }
 
     private void setUpMemoryTile() {
@@ -216,7 +224,7 @@ public class MainController{
     private void setUpGanttBox(){
 
         // Setting up number of processors and array of their names
-        int numberPro = App.config.numberOfScheduleProcessors();
+        int numberPro = config.numberOfScheduleProcessors();
         String[] processors = new String[numberPro];
         for (int i = 0;i<numberPro;i++){
             processors[i]="Processor "+i;
@@ -245,7 +253,7 @@ public class MainController{
         ganttBox.getChildren().add(chart);
 
         //TODO Remove me uwu
-        testGannt();
+//        testGannt();
     }
 
     private void updateGannt(Schedule bestSchedule){
@@ -282,15 +290,30 @@ public class MainController{
     }
 
     //TODO ############# REMOVE ME
-    private void testGannt(){
-        System.out.println("Remove the test Gantt method ");
+//    private void testGannt(){
+//        System.out.println("Remove the test Gantt method ");
+//
+//        Graph graph = createGraph(Paths.get(config.inputDOTFile()));
+//        SchedulingContext ctx = new SchedulingContext(graph, config.numberOfScheduleProcessors());
+//        Schedule maybeOptimal = calculateSchedule(config, graph, ctx);
+//        System.out.print(maybeOptimal.getFinishTime());
+//        writeOutput(Paths.get(config.outputDOTFile()),ctx,maybeOptimal);
+//
+//        updateGannt(maybeOptimal);
+//    }
 
-        Graph graph = createGraph(Paths.get(App.config.inputDOTFile()));
-        SchedulingContext ctx = new SchedulingContext(graph, App.config.numberOfScheduleProcessors());
-        Schedule maybeOptimal = calculateSchedule(App.config, graph, ctx);
-        System.out.print(maybeOptimal.getFinishTime());
-        writeOutput(Paths.get(config.outputDOTFile()),ctx,maybeOptimal);
+    @Override
+    public void update(AlgorithmStats stats) {
+        // take new timestamp
+        System.out.println("Allocations: " + stats.getAllocationsExpanded());
+        System.out.println("Orderings: " + stats.getOrderingsExpanded());
 
-        updateGannt(maybeOptimal);
+        System.out.println("Complete schedules: " + stats.getCompleteSchedules());
+
+        // use old timestamp and cached values to update stuff
+
+        // cache new values
+
+        updateGannt(stats.getCurrentBest());
     }
 }

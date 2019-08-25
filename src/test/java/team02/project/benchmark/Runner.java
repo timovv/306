@@ -1,16 +1,11 @@
 package team02.project.benchmark;
 
-import jdk.nashorn.internal.objects.NativeInt8Array;
 import lombok.var;
-import team02.project.algorithm.AStarAlgorithm;
 import team02.project.algorithm.SequentialBranchBoundAlgorithm;
-import team02.project.algorithm.ParallelBranchAndBound;
-import team02.project.algorithm.SchedulingAlgorithm;
 import team02.project.algorithm.solnspace.ao.AOSolutionSpace;
 import team02.project.benchmark.AlgorithmBenchmark.Result;
 
-import java.nio.file.Paths;
-import java.util.function.Supplier;
+import java.util.Optional;
 
 public class Runner {
     public static void main(String[] args) {
@@ -19,7 +14,7 @@ public class Runner {
 
         var loader = new TestGraphLoader("/testPackages/all10nodes.csv");
 
-        var benchmark = new AlgorithmBenchmark(() -> new SequentialBranchBoundAlgorithm(new AOSolutionSpace()));
+        var benchmark = new AlgorithmBenchmark(() -> new SequentialBranchBoundAlgorithm(new AOSolutionSpace(), Optional.empty()));
 
         int total = 0;
         for (var testGraph : loader) {
